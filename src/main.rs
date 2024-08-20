@@ -2,7 +2,7 @@ mod color;
 mod geometry;
 mod rasterizer;
 
-use color::RGBA;
+use color::Rgba;
 use minifb::{Window, WindowOptions};
 
 /*
@@ -27,7 +27,7 @@ Implementation order?
 fn main() {
     let width = 1280;
     let height = 720;
-    let buffer = vec![u32::from(&RGBA::color(0.5, 0.5, 0.5)); width * height];
+    let buffer = vec![u32::from(&Rgba::color(0.5, 0.5, 0.5)); width * height];
 
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     while window.is_open() {

@@ -1,8 +1,6 @@
 use crate::geometry::{Geometry, GeometryType};
 
-pub struct ToDraw {
-
-}
+pub struct ToDraw {}
 
 // to-do: handle depth
 pub fn rasterize_geometry(geometry: Vec<Geometry>) {

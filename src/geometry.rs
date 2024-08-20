@@ -1,10 +1,12 @@
-use nalgebra as na;
 use crate::color::Color;
+use nalgebra as na;
 
 pub fn line() -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
-    line.vertex_locations.push(na::Vector4::new(0.0, 0.0, 0.0, 1.0));
-    line.vertex_locations.push(na::Vector4::new(10.0, 10.0, 0.0, 1.0));
+    line.vertex_locations
+        .push(na::Vector4::new(0.0, 0.0, 0.0, 1.0));
+    line.vertex_locations
+        .push(na::Vector4::new(10.0, 10.0, 0.0, 1.0));
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Red));
     line
@@ -39,16 +41,13 @@ impl Geometry {
         Self {
             vertices: vec![],
             vertex_locations: vec![],
-            geo_type
+            geo_type,
         }
     }
 }
 
 impl Vertex {
     fn new(index: usize, color: Color) -> Self {
-        Self {
-            index,
-            color,
-        }
+        Self { index, color }
     }
 }
