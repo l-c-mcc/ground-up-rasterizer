@@ -2,8 +2,10 @@ mod color;
 mod geometry;
 mod rasterizer;
 
-use color::Rgba;
+use color::{Rgba, Color};
 use minifb::{Window, WindowOptions};
+use geometry::line;
+use rasterizer::rasterize_geometry;
 
 /*
 rough rendering pipeline:
@@ -26,11 +28,20 @@ Implementation order?
 
 fn main() {
     let width = 1280;
-    let height = 720;
-    let buffer = vec![u32::from(&Rgba::color(0.5, 0.5, 0.5)); width * height];
+    let height = 1000;
+    let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
 
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
+    let line1 = line();
+    let draw_buffer = rasterize_geometry(vec![line1]);
+    for obj in draw_buffer {
+        buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&Rgba::from(&obj.color));
+    }
     while window.is_open() {
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
+}
+
+fn xy_to_1d(x: i32, y: i32, width: i32) -> usize {
+    (y * width + x) as usize
 }

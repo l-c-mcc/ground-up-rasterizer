@@ -4,9 +4,9 @@ use nalgebra as na;
 pub fn line() -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
     line.vertex_locations
-        .push(na::Vector4::new(0.0, 0.0, 0.0, 1.0));
+        .push(na::Vector4::new(100.0, 400.0, 0.0, 1.0));
     line.vertex_locations
-        .push(na::Vector4::new(10.0, 10.0, 0.0, 1.0));
+        .push(na::Vector4::new(500.0, 200.0, 0.0, 1.0));
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Red));
     line
@@ -21,14 +21,14 @@ pub fn cube(c: Color) -> Geometry {
     */
 
 pub struct Geometry {
-    vertices: Vec<Vertex>,
-    vertex_locations: Vec<na::Vector4<f32>>,
+    pub vertices: Vec<Vertex>,
+    pub vertex_locations: Vec<na::Vector4<f32>>,
     pub geo_type: GeometryType,
 }
 
-struct Vertex {
-    index: usize,
-    color: Color,
+pub struct Vertex {
+    pub index: usize,
+    pub color: Color,
 }
 
 pub enum GeometryType {
