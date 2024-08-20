@@ -18,10 +18,10 @@ pub fn cube(c: Color) -> Geometry {
 }
     */
 
-struct Geometry {
+pub struct Geometry {
     vertices: Vec<Vertex>,
     vertex_locations: Vec<na::Vector4<f32>>,
-    geo_type: GeometryType,
+    pub geo_type: GeometryType,
 }
 
 struct Vertex {
@@ -29,7 +29,7 @@ struct Vertex {
     color: Color,
 }
 
-enum GeometryType {
+pub enum GeometryType {
     Triangle,
     Line,
 }
