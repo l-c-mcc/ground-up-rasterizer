@@ -1,3 +1,12 @@
+pub enum Color {
+    Black,
+    Red,
+    Green,
+    Blue,
+    White,
+    Custom(f32, f32, f32),
+}
+
 pub struct RGBA {
     r: f32,
     g: f32,
@@ -25,26 +34,10 @@ impl From<&RGBA> for u32 {
     }
 }
 
-/*
-impl Into<u32> for &RGBA {
-    fn into(self) -> u32 {
-        fn to_8_bytes(c: f32) -> u32 {
-            (c * 255.0) as u32
-        }
-        let mut color: u32 = to_8_bytes(self.0);
-        color <<= 8;
-        color |= to_8_bytes(self.1);
-        color <<= 8;
-        color |= to_8_bytes(self.2);
-        color
-    }
-}
-*/
-
 #[cfg(test)]
 mod tests {
-    use std::{u16, u32, u8};
     use super::*;
+    use std::{u16, u32, u8};
 
     #[test]
     fn test_into_u32() {
