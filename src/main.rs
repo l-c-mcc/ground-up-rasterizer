@@ -1,7 +1,8 @@
 mod color;
+mod geometry;
 
-use minifb::{Window, WindowOptions};
 use color::RGBA;
+use minifb::{Window, WindowOptions};
 
 /*
 rough rendering pipeline:
@@ -13,7 +14,7 @@ rough rendering pipeline:
 Implementation order?
 1. handling the idea of vertices with associated info (color?) in
    3d space within the code
-        a. Vertices can be used to form lines and triangles. 
+        a. Vertices can be used to form lines and triangles.
 2. local space -> world space -> view space transformations
 3. rasterization
  */
