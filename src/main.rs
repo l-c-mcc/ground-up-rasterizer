@@ -1,5 +1,6 @@
 mod color;
 mod geometry;
+mod rasterizer;
 
 use color::RGBA;
 use minifb::{Window, WindowOptions};
@@ -15,7 +16,11 @@ Implementation order?
 1. handling the idea of vertices with associated info (color?) in
    3d space within the code
         a. Vertices can be used to form lines and triangles.
-2. local space -> world space -> view space transformations
+2. local space -> world space -> view space transformations -> canonical view volume -> window
+    local space -> world space: transform/scale/rotate each object as neeeded
+    world space -> view space: matrix transform all points
+    view space -> canonical view volume: more matrix transformations?
+    canonical view volume -> window: scale view volume by resolution
 3. rasterization
  */
 
