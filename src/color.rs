@@ -7,6 +7,19 @@ pub enum Color {
     Custom(f32, f32, f32),
 }
 
+impl From<&Color> for RGBA {
+    fn from(color: &Color) -> Self {
+        match color {
+            Color::Black => return RGBA::color(0.0, 0.0, 0.0),
+            Color::Red => return RGBA::color(1.0, 0.0, 0.0),
+            Color::Green => return RGBA::color(0.0, 1.0, 0.0),
+            Color::Blue => return RGBA::color(0.0, 0.0, 1.0),
+            Color::White => return RGBA::color(1.0, 1.0, 1.0),
+            Color::Custom(r, g, b) => return RGBA::color(*r, *g, *b),
+        }
+    }
+}
+
 pub struct RGBA {
     r: f32,
     g: f32,
