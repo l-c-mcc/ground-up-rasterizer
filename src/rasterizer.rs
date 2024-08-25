@@ -31,6 +31,11 @@ pub fn rasterize_geometry(geometry: Vec<Geometry>) -> Vec<ToDraw> {
     draw_buffer
 }
 
+
+/// Uses Bresenham's; look into Wu's for anti-aliasing
+/// To-do: handle vert/horiz lines
+/// To-do: Turn into Result?
+/// To-do: swap is x0 > x1
 fn draw_line(line: Geometry) -> Vec<ToDraw> {
     let vertex1 = line.vertex_locations[line.vertices[0].index];
     let vertex1_color = line.vertices[0].color;
@@ -39,10 +44,17 @@ fn draw_line(line: Geometry) -> Vec<ToDraw> {
     let y_diff = vertex2[1] - vertex1[1];
     let x_diff = vertex2[0] - vertex1[0];
     let slope = y_diff / x_diff;
-    let line_fn = |x: f32| x * slope + vertex1[1];
+    let y_intercept = (vertex1[1] - slope * vertex1[0]).round() as i32;
+    let imp_line = |x: i32, y: i32| {
+        (y_diff as i32 * x) - (x_diff as i32 * y) + (x_diff as i32 * y_intercept)
+    };
+    let mut y = vertex1[1] as i32;
     let mut draw_buffer = vec![];
     for x in (vertex1[0].round() as i32)..=(vertex2[0].round() as i32) {
-        let y = line_fn(x as f32).round() as i32;
+        let d = imp_line(2*x, y);
+        if d > 0 {
+            y += 1;
+        }
         draw_buffer.push(ToDraw::new(x, y, vertex1_color));
     }
     draw_buffer
