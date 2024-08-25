@@ -1,5 +1,6 @@
 use crate::color::Color;
 use crate::geometry::{Geometry, GeometryType};
+use std::mem::swap;
 
 pub struct ToDraw {
     pub x: i32,
@@ -36,11 +37,16 @@ pub fn rasterize_geometry(geometry: Vec<Geometry>) -> Vec<ToDraw> {
 /// To-do: handle vert/horiz lines
 /// To-do: Turn into Result?
 /// To-do: swap is x0 > x1
+/// To-do: color interp
 fn draw_line(line: Geometry) -> Vec<ToDraw> {
-    let vertex1 = line.vertex_locations[line.vertices[0].index];
-    let vertex1_color = line.vertices[0].color;
-    let vertex2 = line.vertex_locations[line.vertices[1].index];
-    let vertex2_color = line.vertices[1].color;
+    let mut vertex1 = &line.vertex_locations[line.vertices[0].index];
+    let mut vertex1_color = &line.vertices[0].color;
+    let mut vertex2 = &line.vertex_locations[line.vertices[1].index];
+    let mut vertex2_color = &line.vertices[1].color;
+    if vertex1[0] > vertex2[0] {
+        swap(&mut vertex1, &mut vertex2);
+        swap(&mut vertex1_color, &mut vertex2_color);
+    }
     let y_diff = vertex2[1] - vertex1[1];
     let x_diff = vertex2[0] - vertex1[0];
     let slope = y_diff / x_diff;
@@ -55,7 +61,7 @@ fn draw_line(line: Geometry) -> Vec<ToDraw> {
         if d > 0 {
             y += 1;
         }
-        draw_buffer.push(ToDraw::new(x, y, vertex1_color));
+        draw_buffer.push(ToDraw::new(x, y, *vertex1_color));
     }
     draw_buffer
 }
