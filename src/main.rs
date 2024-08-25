@@ -2,9 +2,9 @@ mod color;
 mod geometry;
 mod rasterizer;
 
-use color::{Rgba, Color};
-use minifb::{Window, WindowOptions};
+use color::{Color, Rgba};
 use geometry::line;
+use minifb::{Window, WindowOptions};
 use rasterizer::rasterize_geometry;
 
 /*

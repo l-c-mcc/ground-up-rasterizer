@@ -1,5 +1,5 @@
-use crate::geometry::{Geometry, GeometryType};
 use crate::color::Color;
+use crate::geometry::{Geometry, GeometryType};
 
 pub struct ToDraw {
     pub x: i32,
@@ -39,13 +39,11 @@ fn draw_line(line: Geometry) -> Vec<ToDraw> {
     let y_diff = vertex2[1] - vertex1[1];
     let x_diff = vertex2[0] - vertex1[0];
     let slope = y_diff / x_diff;
-    let line_fn = |x: f32| {
-        x * slope + vertex1[1]
-    };
+    let line_fn = |x: f32| x * slope + vertex1[1];
     let mut draw_buffer = vec![];
-    for x in (vertex1[0].round() as i32) ..= (vertex2[0].round() as i32) {
+    for x in (vertex1[0].round() as i32)..=(vertex2[0].round() as i32) {
         let y = line_fn(x as f32).round() as i32;
-        draw_buffer.push(ToDraw::new(x,y,vertex1_color));
+        draw_buffer.push(ToDraw::new(x, y, vertex1_color));
     }
     draw_buffer
 }
