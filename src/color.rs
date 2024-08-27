@@ -25,16 +25,16 @@ pub struct Rgba {
     pub r: f32,
     pub g: f32,
     pub b: f32,
-    pub _a: f32,
+    pub a: f32,
 }
 
 impl Rgba {
     pub fn color(r: f32, g: f32, b: f32) -> Self {
-        Self { r, g, b, _a: 1.0 }
+        Self { r, g, b, a: 1.0 }
     }
 
     pub fn color_a(r: f32, g: f32, b: f32, a: f32) -> Self {
-        Self { r, g, b, _a: a }
+        Self { r, g, b, a }
     }
 }
 
