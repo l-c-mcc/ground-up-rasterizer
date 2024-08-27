@@ -35,7 +35,7 @@ fn main() {
     let line1 = line();
     let draw_buffer = rasterize_geometry(&vec![line1]);
     for obj in draw_buffer {
-        buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&Rgba::from(&obj.color));
+        buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
     }
     while window.is_open() {
         window.update_with_buffer(&buffer, width, height).unwrap();

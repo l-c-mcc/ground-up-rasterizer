@@ -22,15 +22,19 @@ impl From<&Color> for Rgba {
 }
 
 pub struct Rgba {
-    r: f32,
-    g: f32,
-    b: f32,
-    _a: f32,
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+    pub _a: f32,
 }
 
 impl Rgba {
     pub fn color(r: f32, g: f32, b: f32) -> Self {
         Self { r, g, b, _a: 1.0 }
+    }
+
+    pub fn color_a(r: f32, g: f32, b: f32, a: f32) -> Self {
+        Self { r, g, b, _a: a }
     }
 }
 
