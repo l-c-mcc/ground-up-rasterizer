@@ -78,12 +78,17 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
     let rgba_diff = Rgba::color_a(v2c.r - v1c.r, v2c.g - v1c.g, v2c.b - v1c.b, v2c.a - v1c.a);
     let calc_rgba =
         |x, channel0, channel_diff| channel0 + channel_diff * ((x as f32 - x0) / x_diff);
-    // Prepare for calculating line coords
-    let slope = y_diff / x_diff;
-    let y_intercept = (y0 - slope * x0).round() as i32;
-    let imp_line =
-        |x: i32, y: i32| (y_diff as i32 * x) - (x_diff as i32 * y) + (x_diff as i32 * y_intercept);
+    // update floats to ints
+    let mut y_diff = y_diff as i32;
+    let x_diff = x_diff as i32;
     let mut y = y0 as i32;
+    let y_incr = if y_diff > 0 {
+        1
+    } else {
+        y_diff *= -1;
+        -1
+    };
+    let mut d = x_diff - 2 * y_diff;
     let mut draw_buffer = vec![];
     for x in (x0.round() as i32)..=(x1.round() as i32) {
         let color = Rgba::color_a(
@@ -92,9 +97,11 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
             calc_rgba(x, v1c.b, rgba_diff.b),
             calc_rgba(x, v1c.a, rgba_diff.a),
         );
-        let d = imp_line(2 * x, y);
         if d > 0 {
-            y += 1;
+            d -= 2 * y_diff;
+        } else {
+            y += y_incr;
+            d += 2 * (x_diff - y_diff);
         }
         if xy_flipped {
             draw_buffer.push(ToDraw::new(y, x, color));
