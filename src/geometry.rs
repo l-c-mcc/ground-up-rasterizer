@@ -1,6 +1,11 @@
 use crate::color::Color;
 use nalgebra as na;
 
+#[derive(Debug)]
+pub enum GeoError {
+    NotDiv3,
+}
+
 pub fn line(t: f32) -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
     let x = (300.0 * t.cos()) + 500.0;
@@ -11,6 +16,20 @@ pub fn line(t: f32) -> Geometry {
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Blue));
     line
+}
+
+pub fn triangle() -> Geometry {
+    let mut triangle = Geometry::new(GeometryType::Triangle);
+    triangle.vertex_locations
+        .push(na::Vector4::new(500.0,200.0,0.0,1.0));
+    triangle.vertex_locations
+        .push(na::Vector4::new(900.0,600.0,0.0,1.0));
+    triangle.vertex_locations
+        .push(na::Vector4::new(100.0,600.0,0.0,1.0));
+    triangle.vertices.push(Vertex::new(0, Color::Red));
+    triangle.vertices.push(Vertex::new(1, Color::Blue));
+    triangle.vertices.push(Vertex::new(2, Color::Green));
+    triangle
 }
 
 /*

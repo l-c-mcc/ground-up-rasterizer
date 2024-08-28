@@ -4,7 +4,7 @@ mod rasterizer;
 mod timer;
 
 use color::{Color, Rgba};
-use geometry::line;
+use geometry::triangle;
 use minifb::{Window, WindowOptions};
 use rasterizer::rasterize_geometry;
 use timer::Timer;
@@ -26,23 +26,27 @@ Implementation order?
     view space -> canonical view volume: more matrix transformations?
     canonical view volume -> window: scale view volume by resolution
 3. rasterization
+
+Rasterization to-do
+1. Geometry object needs to more gracefully handle vertices
+2. Test line objects with >2 points
+3. Triangle rasterization
+4. Line clipping
  */
 
 fn main() {
-    let width = 1280;
+    let width = 1000;
     let height = 1000;
-    let mut timer = Timer::default();
-    let mut current_time;
+    let mut _timer = Timer::default();
+    let triangle = triangle();
+    let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
+    let draw_buffer = rasterize_geometry(&vec![triangle]).unwrap();
+    for obj in draw_buffer {
+        buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
+    }
 
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     while window.is_open() {
-        current_time = timer.update();
-        let line1 = line(current_time);
-        let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
-        let draw_buffer = rasterize_geometry(&vec![line1]);
-        for obj in draw_buffer {
-            buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
-        }
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
 }

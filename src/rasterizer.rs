@@ -1,5 +1,5 @@
 use crate::color::Rgba;
-use crate::geometry::{Geometry, GeometryType};
+use crate::geometry::{Geometry, GeometryType, GeoError};
 use nalgebra as na;
 use std::mem::swap;
 
@@ -22,7 +22,7 @@ impl ToDraw {
 }
 
 // to-do: handle depth
-pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Vec<ToDraw> {
+pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];
     for obj in geometry {
         match obj.geo_type {
@@ -31,7 +31,7 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Vec<ToDraw> {
                 for i in 0..len {
                     let v1 = &obj.vertices[i];
                     let v2 = &obj.vertices[i + 1];
-                    draw_buffer.extend(draw_line(
+                    draw_buffer.append(&mut draw_line(
                         &obj.vertex_locations[v1.index],
                         &obj.vertex_locations[v2.index],
                         &(&v1.color).into(),
@@ -39,14 +39,46 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Vec<ToDraw> {
                     ));
                 }
             }
-            GeometryType::Triangle => todo!(),
+            GeometryType::Triangle => {
+                let len = obj.vertices.len();
+                if len % 3 != 0 {
+                    return Err(GeoError::NotDiv3);
+                }
+                let mut i = 0;
+                while i < len {
+                    let v1 = &obj.vertices[i];
+                    let v2 = &obj.vertices[i+1];
+                    let v3 = &obj.vertices[i+2];
+                    draw_buffer.append(&mut draw_line(
+                        &obj.vertex_locations[v1.index],
+                        &obj.vertex_locations[v2.index],
+                        &(&v1.color).into(),
+                        &(&v2.color).into(),
+                    ));
+                    draw_buffer.append(&mut draw_line(
+                        &obj.vertex_locations[v2.index],
+                        &obj.vertex_locations[v3.index],
+                        &(&v2.color).into(),
+                        &(&v3.color).into(),
+                    ));
+                    draw_buffer.append(&mut draw_line(
+                        &obj.vertex_locations[v3.index],
+                        &obj.vertex_locations[v1.index],
+                        &(&v3.color).into(),
+                        &(&v1.color).into(),
+                    ));
+                    i += 3;
+                }
+            },
         }
     }
-    draw_buffer
+    Ok(draw_buffer)
 }
 
-/// Uses Bresenham's; look into Wu's for anti-aliasing
-/// To-do: Turn into Result?
+/// Implementation of Bresenham's line drawing algorithm.
+/// Takes two points and returns a ToDraw vector mapping the corresponding line
+/// to pixel values.
+/// to-do: color params do not need to be refs
 fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
     // Prepare vars
     let mut v1c = v1c;
