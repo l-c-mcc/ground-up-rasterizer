@@ -3,13 +3,11 @@ use nalgebra as na;
 
 pub fn line(t: f32) -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
-    let t = t;
     let x = (300.0 * t.cos()) + 500.0;
     let y = (300.0 * t.sin()) + 500.0;
     line.vertex_locations
         .push(na::Vector4::new(500.0, 500.0, 0.0, 1.0));
-    line.vertex_locations
-        .push(na::Vector4::new(x, y, 0.0, 1.0));
+    line.vertex_locations.push(na::Vector4::new(x, y, 0.0, 1.0));
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Blue));
     line

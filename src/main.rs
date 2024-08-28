@@ -6,7 +6,7 @@ mod timer;
 use color::{Color, Rgba};
 use geometry::line;
 use minifb::{Window, WindowOptions};
-use rasterizer::{rasterize_geometry, ToDraw};
+use rasterizer::rasterize_geometry;
 use timer::Timer;
 
 /*
