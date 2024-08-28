@@ -59,7 +59,7 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
     let mut x_diff = x1 - x0;
     // Get the line to the point where it has a slope between [0,1]
     // drawn in the positive x direction.
-    let xy_flipped = if y_diff > x_diff {
+    let xy_flipped = if y_diff.abs() > x_diff.abs() {
         swap(&mut x_diff, &mut y_diff);
         swap(&mut x0, &mut y0);
         swap(&mut x1, &mut y1);
