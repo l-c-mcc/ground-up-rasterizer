@@ -22,6 +22,7 @@ impl ToDraw {
 }
 
 // to-do: handle depth
+// to-do: switch geomoetry from vec to one obj
 pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];
     for obj in geometry {
@@ -42,7 +43,7 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoEr
             GeometryType::Triangle => {
                 let len = obj.vertices.len();
                 if len % 3 != 0 {
-                    return Err(GeoError::NotDiv3);
+                    return Err(GeoError::NotDiv3(obj.clone()));
                 }
                 let mut i = 0;
                 while i < len {
