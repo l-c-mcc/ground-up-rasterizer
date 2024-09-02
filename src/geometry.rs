@@ -21,12 +21,34 @@ pub fn line(t: f32) -> Geometry {
 pub fn triangle() -> Geometry {
     let mut triangle = Geometry::new(GeometryType::Triangle);
     triangle.vertex_locations
-        .push(na::Vector4::new(50.0,20.0,0.0,1.0));
+        .push(na::Vector4::new(500.0,200.0,0.0,1.0));
     triangle.vertex_locations
-        .push(na::Vector4::new(90.0,90.0,0.0,1.0));
+        .push(na::Vector4::new(900.0,900.0,0.0,1.0));
+    triangle.vertex_locations
+        .push(na::Vector4::new(100.0,900.0,0.0,1.0));
     triangle.vertices.push(Vertex::new(0, Color::Red));
     triangle.vertices.push(Vertex::new(1, Color::Blue));
+    triangle.vertices.push(Vertex::new(2, Color::Green));
     triangle
+}
+
+pub fn square(scale: f32) -> Geometry {
+    let mut square = Geometry::new(GeometryType::Triangle);
+    square.vertex_locations
+        .push(scale * na::Vector4::new(0.0, 0.0, 0.0, 1.0));
+    square.vertex_locations
+        .push(scale * na::Vector4::new(1.0, 0.0, 0.0, 1.0));
+    square.vertex_locations
+        .push(scale * na::Vector4::new(0.0, 1.0, 0.0, 1.0));
+    square.vertex_locations
+        .push(scale * na::Vector4::new(1.0, 1.0, 0.0, 1.0));
+    square.vertices.push(Vertex::new(0, Color::Blue));
+    square.vertices.push(Vertex::new(1, Color::White));
+    square.vertices.push(Vertex::new(2, Color::Red));
+    square.vertices.push(Vertex::new(1, Color::White));
+    square.vertices.push(Vertex::new(3, Color::Green));
+    square.vertices.push(Vertex::new(2, Color::Red));
+    square
 }
 
 /*
@@ -37,7 +59,7 @@ pub fn cube(c: Color) -> Geometry {
 }
     */
 
-    #[derive(Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Geometry {
     pub vertices: Vec<Vertex>,
     pub vertex_locations: Vec<na::Vector4<f32>>,

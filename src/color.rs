@@ -1,3 +1,5 @@
+use std::ops::{Add, Mul};
+
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
     Black,
@@ -21,6 +23,9 @@ impl From<&Color> for Rgba {
     }
 }
 
+
+//to-do: derive Copy
+#[derive(Debug, Clone)]
 pub struct Rgba {
     pub r: f32,
     pub g: f32,
@@ -52,10 +57,43 @@ impl From<&Rgba> for u32 {
     }
 }
 
+impl Add for &Rgba {
+    type Output = Rgba;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Rgba::color_a(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+    }
+}
+
+impl Mul<f32> for &Rgba {
+    type Output = Rgba;
+    fn mul(self, rhs: f32) -> Self::Output {
+        Rgba::color_a(self.r * rhs, self.g * rhs, self.b * rhs, self.a * rhs)
+    }
+}
+
+impl Mul<&Rgba> for f32 {
+    type Output = Rgba;
+    fn mul(self, rhs: &Rgba) -> Self::Output {
+        rhs * self
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::math::f32_compare;
     use super::*;
     use std::{u16, u32, u8};
+
+    impl PartialEq for Rgba {
+        fn eq(&self, other: &Self) -> bool {
+            let r = f32_compare(self.r, other.r);
+            let g = f32_compare(self.g, other.g);
+            let b = f32_compare(self.b, other.b);
+            let a = f32_compare(self.a, other.a);
+            r && g && b && a
+        }
+    }
 
     #[test]
     fn test_into_u32() {
@@ -70,5 +108,27 @@ mod tests {
         let green_rgba = u32::from(&Rgba::color(0.0, 1.0, 0.0));
         let green_u32 = (u16::MAX as u32) ^ (u8::MAX as u32);
         assert_eq!(green_rgba, green_u32);
+    }
+
+    #[test]
+    fn test_color_eq() {
+        assert_eq!(Rgba::from(&Color::Blue),(&Color::Blue).into());
+        assert_ne!(Rgba::from(&Color::Blue),(&Color::Red).into());
+    }
+
+    #[test]
+    fn test_color_add() {
+        let blue: Rgba = (&Color::Blue).into();
+        let red: Rgba = (&Color::Red).into();
+        assert_eq!(&blue + &red, Rgba::color_a(1.0, 0.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn test_color_mul() {
+        let orig = Rgba::color_a(1.0, 1.0, 1.0, 1.0);
+        let left_mul = 2.0 * &orig;
+        let right_mul = &orig * 0.2;
+        assert_eq!(left_mul, Rgba::color_a(2.0, 2.0, 2.0, 2.0));
+        assert_eq!(right_mul, Rgba::color_a(0.2, 0.2, 0.2, 0.2));
     }
 }

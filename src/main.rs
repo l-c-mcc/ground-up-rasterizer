@@ -2,11 +2,12 @@
 
 mod color;
 mod geometry;
+mod math;
 mod rasterizer;
 mod timer;
 
 use color::{Color, Rgba};
-use geometry::{triangle, GeoError};
+use geometry::{square, GeoError};
 use minifb::{Window, WindowOptions};
 use rasterizer::rasterize_geometry;
 use timer::Timer;
@@ -40,10 +41,10 @@ fn main() {
     let width = 1000;
     let height = 1000;
     let mut _timer = Timer::default();
-    let triangle = triangle();
+    let shape = square(999.0);
     let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
     let mut draw_buffer = vec![];
-    draw_buffer.append(&mut rasterize_geometry(&vec![triangle]).unwrap_or_else(|error| {
+    draw_buffer.append(&mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {
         match error {
             GeoError::NotDiv3(geo) => eprintln!("The number of vertices of the following triangle is not divisible by 3: {:?}", geo)
         };
