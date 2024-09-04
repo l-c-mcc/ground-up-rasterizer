@@ -86,6 +86,12 @@ impl Geometry {
             geo_type,
         }
     }
+
+    fn transform(&mut self, matrix: na::Matrix4<f32>) {
+        for vertex in &mut self.vertex_locations {
+            *vertex = matrix * *vertex;
+        }
+    }
 }
 
 impl Vertex {
