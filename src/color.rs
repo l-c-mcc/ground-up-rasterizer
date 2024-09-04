@@ -23,7 +23,6 @@ impl From<&Color> for Rgba {
     }
 }
 
-
 //to-do: derive Copy
 #[derive(Debug, Clone)]
 pub struct Rgba {
@@ -61,7 +60,12 @@ impl Add for &Rgba {
     type Output = Rgba;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Rgba::color_a(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+        Rgba::color_a(
+            self.r + rhs.r,
+            self.g + rhs.g,
+            self.b + rhs.b,
+            self.a + rhs.a,
+        )
     }
 }
 
@@ -81,8 +85,8 @@ impl Mul<&Rgba> for f32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::math::f32_compare;
     use super::*;
+    use crate::math::f32_compare;
     use std::{u16, u32, u8};
 
     impl PartialEq for Rgba {
@@ -112,8 +116,8 @@ mod tests {
 
     #[test]
     fn test_color_eq() {
-        assert_eq!(Rgba::from(&Color::Blue),(&Color::Blue).into());
-        assert_ne!(Rgba::from(&Color::Blue),(&Color::Red).into());
+        assert_eq!(Rgba::from(&Color::Blue), (&Color::Blue).into());
+        assert_ne!(Rgba::from(&Color::Blue), (&Color::Red).into());
     }
 
     #[test]

@@ -1,10 +1,22 @@
+use nalgebra as na;
+
 pub fn f32_compare(left: f32, right: f32) -> bool {
     let epsilon = 0.00001;
-    if (left - right).abs() < epsilon {
-        true
-    } else {
-        false
-    }
+    (left - right).abs() < epsilon
+}
+
+pub fn translation_matrix(vec: na::Vector3<f32>) -> na::Matrix4<f32> {
+    na::matrix![1.0,0.0,0.0,vec.x;
+                0.0,1.0,0.0,vec.y;
+                0.0,0.0,1.0,vec.z;
+                0.0,0.0,0.0,1.0]
+}
+
+pub fn z_rotation_matrix(theta: f32) -> na::Matrix4<f32> {
+    na::matrix![theta.cos(), -(theta.sin()), 0.0, 0.0;
+                theta.sin(), theta.cos(), 0.0, 0.0;
+                0.0, 0.0, 1.0, 0.0;
+                0.0, 0.0, 0.0, 1.0]
 }
 
 #[cfg(test)]

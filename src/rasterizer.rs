@@ -1,5 +1,5 @@
 use crate::color::Rgba;
-use crate::geometry::{Geometry, GeometryType, GeoError};
+use crate::geometry::{GeoError, Geometry, GeometryType};
 use nalgebra as na;
 use std::mem::swap;
 
@@ -49,19 +49,19 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoEr
                 while i < len {
                     // move this inside Geometry struct?
                     let v1 = &obj.vertices[i];
-                    let v2 = &obj.vertices[i+1];
-                    let v3 = &obj.vertices[i+2];
+                    let v2 = &obj.vertices[i + 1];
+                    let v3 = &obj.vertices[i + 2];
                     draw_buffer.append(&mut rasterize_triangle(
-                        &obj.vertex_locations[v1.index], 
+                        &obj.vertex_locations[v1.index],
                         &obj.vertex_locations[v2.index],
-                        &obj.vertex_locations[v3.index], 
+                        &obj.vertex_locations[v3.index],
                         &(&v1.color).into(),
                         &(&v2.color).into(),
-                        &(&v3.color).into()
+                        &(&v3.color).into(),
                     ));
                     i += 3;
                 }
-            },
+            }
         }
     }
     Ok(draw_buffer)
@@ -136,42 +136,46 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
     draw_buffer
 }
 
-fn rasterize_triangle(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v3: &na::Vector4<f32>, 
-                    v1c: &Rgba, v2c: &Rgba, v3c: &Rgba) -> Vec<ToDraw> {
+fn rasterize_triangle(
+    v1: &na::Vector4<f32>,
+    v2: &na::Vector4<f32>,
+    v3: &na::Vector4<f32>,
+    v1c: &Rgba,
+    v2c: &Rgba,
+    v3c: &Rgba,
+) -> Vec<ToDraw> {
     let x0 = v1[0];
     let x1 = v2[0];
     let x2 = v3[0];
     let y0 = v1[1];
     let y1 = v2[1];
     let y2 = v3[1];
-    let f12 = |x, y| {
-        (y1-y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1
-    };
-    let f20 = |x,y| {
-        (y2-y0) * x + (x0 -x2) * y + x2 * y0 - x0 * y2
-    };
-    let f01 = |x, y| {
-        (y0-y1) * x + (x1-x0) * y + x0 * y1 - x1 * y0
-    };
-    let alpha_denom = f12(x0,y0);
-    let beta_denom = f20(x1,y1);
-    let lambda_denom = f01(x2,y2);
-    let alpha = |x, y| f12(x,y) / alpha_denom;
-    let beta = |x, y| f20(x,y) / beta_denom;
-    let lambda = |x,y| f01(x,y) / lambda_denom;
+    let f12 = |x, y| (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1;
+    let f20 = |x, y| (y2 - y0) * x + (x0 - x2) * y + x2 * y0 - x0 * y2;
+    let f01 = |x, y| (y0 - y1) * x + (x1 - x0) * y + x0 * y1 - x1 * y0;
+    let alpha_denom = f12(x0, y0);
+    let beta_denom = f20(x1, y1);
+    let lambda_denom = f01(x2, y2);
+    let alpha = |x, y| f12(x, y) / alpha_denom;
+    let beta = |x, y| f20(x, y) / beta_denom;
+    let lambda = |x, y| f01(x, y) / lambda_denom;
     let x_min = x0.min(x1).min(x2).round() as usize;
     let x_max = x0.max(x1).max(x2).round() as usize;
     let y_min = y0.min(y1).min(y2).round() as usize;
     let y_max = y0.max(y1).max(y2).round() as usize;
-    let within_bounds = |val| val >= 0.0 && val <= 1.0;
+    let within_bounds = |val| (0.0..=1.0).contains(&val);
     let mut draw_buffer = vec![];
     for y in (y_min..=y_max).map(|y| y as f32) {
         for x in (x_min..=x_max).map(|x| x as f32) {
-            let a = alpha(x,y);
-            let b = beta(x,y);
-            let l = lambda(x,y);
+            let a = alpha(x, y);
+            let b = beta(x, y);
+            let l = lambda(x, y);
             if within_bounds(a) && within_bounds(b) && within_bounds(l) {
-                draw_buffer.push(ToDraw::new(x as i32, y as i32, &(&(a * v1c) + &(b * v2c)) + &(l * v3c)));
+                draw_buffer.push(ToDraw::new(
+                    x as i32,
+                    y as i32,
+                    &(&(a * v1c) + &(b * v2c)) + &(l * v3c),
+                ));
             }
         }
     }

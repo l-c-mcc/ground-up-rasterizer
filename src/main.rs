@@ -7,6 +7,8 @@ mod math;
 mod rasterizer;
 mod timer;
 
+use std::f32::consts::PI;
+
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
 use minifb::{Window, WindowOptions};
@@ -41,13 +43,20 @@ Rasterization to-do
 fn main() {
     let width = 1000;
     let height = 1000;
-    let mut timer = Timer::default();
+    let mut _timer = Timer::default();
     let mut shape = triangle();
+    let translation = math::translation_matrix(shape.from_origin().unwrap());
+    let translation2 = math::translation_matrix(shape.from_origin().unwrap() * -1.0);
+    let rotation = math::z_rotation_matrix(PI / 2.0);
+    shape.transform(translation2);
+    shape.transform(rotation);
+    shape.transform(translation);
     let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
     let mut draw_buffer = vec![];
     draw_buffer.append(&mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {
         match error {
-            GeoError::NotDiv3(geo) => eprintln!("The number of vertices of the following triangle is not divisible by 3: {:?}", geo)
+            GeoError::NotDiv3(geo) => eprintln!("The number of vertices of the following triangle is not divisible by 3: {:?}", geo),
+            e => panic!("{:?}", e),
         };
         vec![]
     }));
