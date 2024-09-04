@@ -1,3 +1,4 @@
+// Remove once in 3D?
 #![allow(dead_code)]
 
 mod color;
@@ -7,7 +8,7 @@ mod rasterizer;
 mod timer;
 
 use color::{Color, Rgba};
-use geometry::{square, GeoError};
+use geometry::{triangle, GeoError};
 use minifb::{Window, WindowOptions};
 use rasterizer::rasterize_geometry;
 use timer::Timer;
@@ -40,8 +41,8 @@ Rasterization to-do
 fn main() {
     let width = 1000;
     let height = 1000;
-    let mut _timer = Timer::default();
-    let shape = square(999.0);
+    let mut timer = Timer::default();
+    let mut shape = triangle();
     let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
     let mut draw_buffer = vec![];
     draw_buffer.append(&mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {

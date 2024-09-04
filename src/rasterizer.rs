@@ -47,6 +47,7 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoEr
                 }
                 let mut i = 0;
                 while i < len {
+                    // move this inside Geometry struct?
                     let v1 = &obj.vertices[i];
                     let v2 = &obj.vertices[i+1];
                     let v3 = &obj.vertices[i+2];
