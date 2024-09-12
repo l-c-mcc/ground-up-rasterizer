@@ -48,12 +48,12 @@ fn main() {
     let mut shape = triangle();
     let translation = math::translation_matrix(shape.from_origin().unwrap());
     let translation2 = math::translation_matrix(shape.from_origin().unwrap() * -1.0);
-    let rotation = math::z_rotation_matrix(PI / 2.0);
-    let scalar = math::scale_matrix(na::Vector3::new(2.0, 2.0, 2.0));
+    let rotation = math::z_rotation_matrix(PI / 3.0);
+    let scalar = math::scale_matrix(na::Vector3::new(1.0, -0.5, 0.5));
     shape.transform(translation2);
     shape.transform(rotation);
-    shape.transform(translation);
     shape.transform(scalar);
+    shape.transform(translation);
     let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
     let mut draw_buffer = vec![];
     draw_buffer.append(
