@@ -9,6 +9,7 @@ mod timer;
 
 use std::f32::consts::PI;
 
+use nalgebra as na;
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
 use minifb::{Window, WindowOptions};
@@ -48,18 +49,25 @@ fn main() {
     let translation = math::translation_matrix(shape.from_origin().unwrap());
     let translation2 = math::translation_matrix(shape.from_origin().unwrap() * -1.0);
     let rotation = math::z_rotation_matrix(PI / 2.0);
+    let scalar = math::scale_matrix(na::Vector3::new(2.0, 2.0, 2.0));
     shape.transform(translation2);
     shape.transform(rotation);
     shape.transform(translation);
+    shape.transform(scalar);
     let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
     let mut draw_buffer = vec![];
-    draw_buffer.append(&mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {
-        match error {
-            GeoError::NotDiv3(geo) => eprintln!("The number of vertices of the following triangle is not divisible by 3: {:?}", geo),
-            e => panic!("{:?}", e),
-        };
-        vec![]
-    }));
+    draw_buffer.append(
+        &mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {
+            match error {
+                GeoError::NotDiv3(geo) => eprintln!(
+                    "The number of vertices of the following triangle is not divisible by 3: {:?}",
+                    geo
+                ),
+                e => panic!("{:?}", e),
+            };
+            vec![]
+        }),
+    );
     for obj in draw_buffer {
         buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
     }
