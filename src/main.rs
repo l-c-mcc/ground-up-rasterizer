@@ -48,7 +48,7 @@ fn main() {
     let mut shape = triangle();
     let translation = math::translation_matrix(shape.vec_from_origin().unwrap());
     let translation2 = math::translation_matrix(shape.vec_from_origin().unwrap() * -1.0);
-    let rotation = math::x_rotation_matrix(PI / 2.5);
+    let rotation = math::y_rotation_matrix(PI / 2.5);
     let scalar = math::scale_matrix(na::Vector3::new(1.0, -1.5, 0.5));
     shape.transform(translation2);
     shape.transform(rotation);
