@@ -49,7 +49,7 @@ fn main() {
     let translation = math::translation_matrix(shape.vec_from_origin().unwrap());
     let translation2 = math::translation_matrix(shape.vec_from_origin().unwrap() * -1.0);
     let rotation = math::y_rotation_matrix(PI / 2.5);
-    let scalar = math::scale_matrix(na::Vector3::new(1.0, -1.5, 0.5));
+    let scalar = math::scale_matrix(na::Vector3::new(10.0, -10.5, 0.5));
     shape.transform(translation2);
     shape.transform(rotation);
     shape.transform(scalar);
@@ -69,7 +69,9 @@ fn main() {
         }),
     );
     for obj in draw_buffer {
-        //buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
+        if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
+            buffer[index] = u32::from(&obj.color);
+        }
     }
 
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
