@@ -131,7 +131,7 @@ impl Geometry {
         }
     }
 
-    pub fn from_origin(&self) -> Option<na::Vector3<f32>> {
+    pub fn vec_from_origin(&self) -> Option<na::Vector3<f32>> {
         self.center.map(|c| na::Vector3::new(c.x, c.y, c.z))
     }
 }
