@@ -69,7 +69,7 @@ fn main() {
         }),
     );
     for obj in draw_buffer {
-        buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
+        //buffer[xy_to_1d(obj.x, obj.y, width as i32)] = u32::from(&obj.color);
     }
 
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
@@ -78,8 +78,12 @@ fn main() {
     }
 }
 
-fn xy_to_1d(x: i32, y: i32, width: i32) -> usize {
-    (y * width + x) as usize
+fn xy_to_1d(x: i32, y: i32, width: i32, height: i32) -> Option<usize> {
+    if x >= width || x < 0 || y < 0 || y >= height {
+        None
+    } else {
+        Some((y * width + x) as usize)
+    }
 }
 
 #[cfg(test)]
@@ -88,8 +92,11 @@ mod tests {
 
     #[test]
     fn test_xy_to_1d() {
-        assert_eq!(xy_to_1d(0, 0, 500), 0);
-        assert_eq!(xy_to_1d(0, 1, 500), 500);
-        assert_eq!(xy_to_1d(499, 499, 500), 249999);
+        let height = 500;
+        let width = 500;
+        assert_eq!(xy_to_1d(0, 0, width, height), Some(0));
+        assert_eq!(xy_to_1d(0, 1, width, height), Some(500));
+        assert_eq!(xy_to_1d(499, 499, width, height), Some(249999));
+        assert_eq!(xy_to_1d(500, 499, width, height), None);
     }
 }
