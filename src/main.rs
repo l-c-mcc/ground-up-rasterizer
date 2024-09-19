@@ -42,6 +42,7 @@ Rasterization to-do
  */
 
 fn main() {
+    rasterizer::test();
     let width = 1000;
     let height = 1000;
     let mut _timer = Timer::default();

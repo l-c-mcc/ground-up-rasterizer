@@ -1,4 +1,5 @@
 use std::ops::{Add, Mul};
+use crate::math::{f32_compare, f32_equals};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -30,6 +31,19 @@ pub struct Rgba {
     pub g: f32,
     pub b: f32,
     pub a: f32,
+}
+
+impl PartialOrd for Rgba {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        // to-do: NaN case
+        f32_compare(self.a, other.a)
+    }
+}
+
+impl Ord for Rgba {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.partial_cmp(other).unwrap()
+    }
 }
 
 impl Rgba {
@@ -69,6 +83,18 @@ impl Add for &Rgba {
     }
 }
 
+impl PartialEq for Rgba {
+    fn eq(&self, other: &Self) -> bool {
+        let r = f32_equals(self.r, other.r);
+        let g = f32_equals(self.g, other.g);
+        let b = f32_equals(self.b, other.b);
+        let a = f32_equals(self.a, other.a);
+        r && g && b && a
+    }
+}
+
+impl Eq for Rgba {}
+
 impl Mul<f32> for &Rgba {
     type Output = Rgba;
     fn mul(self, rhs: f32) -> Self::Output {
@@ -86,18 +112,9 @@ impl Mul<&Rgba> for f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::math::f32_compare;
     use std::{u16, u32, u8};
 
-    impl PartialEq for Rgba {
-        fn eq(&self, other: &Self) -> bool {
-            let r = f32_compare(self.r, other.r);
-            let g = f32_compare(self.g, other.g);
-            let b = f32_compare(self.b, other.b);
-            let a = f32_compare(self.a, other.a);
-            r && g && b && a
-        }
-    }
+
 
     #[test]
     fn test_into_u32() {

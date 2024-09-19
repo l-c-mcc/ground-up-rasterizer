@@ -1,14 +1,64 @@
 use crate::color::Rgba;
 use crate::geometry::{GeoError, Geometry, GeometryType};
+use crate::math::{self, f32_compare};
 use nalgebra as na;
 use std::mem::swap;
 
+pub fn test() {
+    use std::collections::BTreeSet;
+        let x = 1;
+        let y = 1;
+        let c = Rgba::color(1.0, 0.0, 0.0);
+        let origin = ToDraw::new(x, y, c.clone());
+        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
+        for x in (-1..=1).map(|x| x as f32) {
+            for y in (-1..=1).map(|y| y as f32) {
+                if x == 0.0 && y == 0.0 {
+                    continue;
+                }
+                let mut vertex2 = vertex1;
+                vertex2.x += x;
+                vertex2.y += y;
+                let line = draw_line(&vertex1, &vertex2, &c, &c);
+                let target_point = ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
+                let mut target_line = BTreeSet::new();
+                let is_true = &origin.cmp(&target_point);
+                assert!(target_line.insert(&origin));
+                assert!(target_line.insert(&target_point));
+                let computed_line = BTreeSet::from_iter(line.iter());
+                assert_eq!(target_line, computed_line);
+            }
+        }
+}
+
+#[derive(Debug, Clone)]
 pub struct ToDraw {
     pub x: i32,
     pub y: i32,
     pub color: Rgba,
     _depth: f32,
 }
+
+impl PartialOrd for ToDraw {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        f32_compare(self._depth, other._depth)
+    }
+}
+
+impl Ord for ToDraw {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // panicing in NaN case is intended
+        self.partial_cmp(other).unwrap()
+    }
+}
+
+impl PartialEq for ToDraw {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y && self.color == other.color && math::f32_equals(self._depth, other._depth)
+    }
+}
+
+impl Eq for ToDraw {}
 
 impl ToDraw {
     fn new(x: i32, y: i32, color: Rgba) -> Self {
@@ -20,6 +70,7 @@ impl ToDraw {
         }
     }
 }
+
 
 // to-do: handle depth
 // to-do: switch geomoetry from vec to one obj
@@ -180,4 +231,58 @@ fn rasterize_triangle(
         }
     }
     draw_buffer
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    //to-do: test ToDraw equality
+    #[test]
+    fn test_point() {
+        let x = 1;
+        let y = 1;
+        let c = Rgba::color(1.0, 0.0, 0.0);
+        let target = vec![ToDraw::new(x, y, c.clone())];
+        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
+        let vertex2 = vertex1;
+        assert_eq!(draw_line(&vertex1, &vertex2, &c, &c), target);
+    }
+
+    // to-do: handle depth when in 3d
+    #[test]
+    fn test_line() {
+        // (x,y), (x,y)
+        // (1,1), (1,0)
+        // (1,1), (1,2)
+        // (1,1), (0,1)
+        // (1,1), (2,1)
+        // (1,1), (0,0)
+        // (1,1), (2,2)
+        // (1,1), (0,2)
+        // (1,1), (2,0)
+        let x = 1;
+        let y = 1;
+        let c = Rgba::color(1.0, 0.0, 0.0);
+        let origin = ToDraw::new(x, y, c.clone());
+        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
+        for x in (-1..=1).map(|x| x as f32) {
+            for y in (-1..=1).map(|y| y as f32) {
+                if x == 0.0 && y == 0.0 {
+                    continue;
+                }
+                let mut vertex2 = vertex1;
+                vertex2.x += x;
+                vertex2.y += y;
+                let line = draw_line(&vertex1, &vertex2, &c, &c);
+                let target_point = ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
+                let mut target_line = BTreeSet::new();
+                assert!(target_line.insert(&origin));
+                assert!(target_line.insert(&target_point));
+                let computed_line = BTreeSet::from_iter(line.iter());
+                assert_eq!(target_line, computed_line);
+            }
+        }
+    }
 }
