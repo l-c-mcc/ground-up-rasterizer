@@ -2,6 +2,27 @@ use nalgebra as na;
 use std::cmp;
 
 
+pub struct OrdFloat(f32);
+
+impl PartialEq for OrdFloat {
+    fn eq(&self, other: &Self) -> bool {
+        f32_equals(self.0, other.0)
+    }
+}
+
+impl Eq for OrdFloat {}
+
+impl PartialOrd for OrdFloat {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        f32_compare(self.0, other.0)
+    }
+}
+
+impl Ord for OrdFloat {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
 
 pub fn f32_equals(left: f32, right: f32) -> bool {
     // to-do: worry about NaN case
