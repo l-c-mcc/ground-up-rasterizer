@@ -4,7 +4,7 @@ use crate::math::OrdFloat;
 use nalgebra as na;
 use std::mem::swap;
 
-#[derive(Debug,PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ToDraw {
     pub x: i32,
     pub y: i32,
@@ -22,7 +22,6 @@ impl ToDraw {
         }
     }
 }
-
 
 // to-do: handle depth
 // to-do: switch geomoetry from vec to one obj
@@ -103,8 +102,9 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
     }
     // Set up color eq.
     let rgba_diff = v2c - v1c;
-    let calc_rgba =
-        |x: i32, channel0: OrdFloat, channel_diff: OrdFloat| (channel0 + channel_diff * OrdFloat((x as f32 - x0) / x_diff)).0;
+    let calc_rgba = |x: i32, channel0: OrdFloat, channel_diff: OrdFloat| {
+        (channel0 + channel_diff * OrdFloat((x as f32 - x0) / x_diff)).0
+    };
     // update floats to ints
     let mut y_diff = y_diff as i32;
     let x_diff = x_diff as i32;
@@ -237,7 +237,8 @@ mod tests {
                 vertex2.x += x;
                 vertex2.y += y;
                 let line = draw_line(&vertex1, &vertex2, &c, &c);
-                let target_point = ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
+                let target_point =
+                    ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
                 let mut target_line = BTreeSet::new();
                 assert!(target_line.insert(&origin));
                 assert!(target_line.insert(&target_point));

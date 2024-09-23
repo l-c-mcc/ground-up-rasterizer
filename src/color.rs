@@ -1,5 +1,5 @@
-use std::ops::{Add, Sub, Mul};
 use crate::math::OrdFloat;
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -24,7 +24,7 @@ impl From<&Color> for Rgba {
     }
 }
 
-#[derive(PartialEq,Eq,PartialOrd,Ord,Debug,Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Rgba {
     pub r: OrdFloat,
     pub g: OrdFloat,
@@ -34,11 +34,21 @@ pub struct Rgba {
 
 impl Rgba {
     pub fn color(r: f32, g: f32, b: f32) -> Self {
-        Self { r: OrdFloat(r), g: OrdFloat(g), b: OrdFloat(b), a: OrdFloat(1.0) }
+        Self {
+            r: OrdFloat(r),
+            g: OrdFloat(g),
+            b: OrdFloat(b),
+            a: OrdFloat(1.0),
+        }
     }
 
     pub fn color_a(r: f32, g: f32, b: f32, a: f32) -> Self {
-        Self { r: OrdFloat(r), g: OrdFloat(g), b: OrdFloat(b), a: OrdFloat(a) }
+        Self {
+            r: OrdFloat(r),
+            g: OrdFloat(g),
+            b: OrdFloat(b),
+            a: OrdFloat(a),
+        }
     }
 }
 
@@ -84,7 +94,12 @@ impl Sub for &Rgba {
 impl Mul<f32> for &Rgba {
     type Output = Rgba;
     fn mul(self, rhs: f32) -> Self::Output {
-        Rgba::color_a(self.r.0 * rhs, self.g.0 * rhs, self.b.0 * rhs, self.a.0 * rhs)
+        Rgba::color_a(
+            self.r.0 * rhs,
+            self.g.0 * rhs,
+            self.b.0 * rhs,
+            self.a.0 * rhs,
+        )
     }
 }
 
@@ -99,8 +114,6 @@ impl Mul<&Rgba> for f32 {
 mod tests {
     use super::*;
     use std::{u16, u32, u8};
-
-
 
     #[test]
     fn test_into_u32() {

@@ -9,10 +9,10 @@ mod timer;
 
 use std::f32::consts::PI;
 
-use nalgebra as na;
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
 use minifb::{Window, WindowOptions};
+use nalgebra as na;
 use rasterizer::rasterize_geometry;
 use timer::Timer;
 
