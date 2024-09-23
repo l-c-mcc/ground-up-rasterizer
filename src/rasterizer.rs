@@ -4,34 +4,6 @@ use crate::math::OrdFloat;
 use nalgebra as na;
 use std::mem::swap;
 
-pub fn test() {
-    use std::collections::BTreeSet;
-        let x = 1;
-        let y = 1;
-        let c = Rgba::color(1.0, 0.0, 0.0);
-        let origin = ToDraw::new(x, y, c.clone());
-        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
-        for x in (0..=1).map(|x| x as f32) {
-            for y in (0..=1).map(|y| y as f32) {
-                if x == 0.0 && y == 0.0 {
-                    continue;
-                }
-                let mut vertex2 = vertex1;
-                vertex2.x += x;
-                vertex2.y += y;
-                let line = draw_line(&vertex1, &vertex2, &c, &c);
-                let target_point = ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
-                let mut target_line = BTreeSet::new();
-                let is_true = &origin.cmp(&target_point);
-                assert!(target_line.insert(&origin));
-                assert!(target_line.insert(&target_point));
-                let computed_line = BTreeSet::from_iter(line.iter());
-                println!("{} {} {} {}", x, y, vertex1, vertex2);
-                assert_eq!(target_line, computed_line);
-            }
-        }
-}
-
 #[derive(Debug,PartialEq,Eq,PartialOrd,Ord)]
 pub struct ToDraw {
     pub x: i32,
@@ -144,19 +116,28 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
         -1
     };
     let mut d = x_diff - 2 * y_diff;
+    let d_incr_gte_0 = -2 * y_diff;
+    let d_incr_lt_0 = 2 * (x_diff - y_diff);
     let mut draw_buffer = vec![];
-    for x in (x0.round() as i32)..=(x1.round() as i32) {
+    let x0 = x0.round() as i32;
+    let y0 = y0.round() as i32;
+    if xy_flipped {
+        draw_buffer.push(ToDraw::new(y0, x0, v1c.clone()));
+    } else {
+        draw_buffer.push(ToDraw::new(x0, y0, v1c.clone()));
+    }
+    for x in (x0 + 1)..=(x1.round() as i32) {
         let color = Rgba::color_a(
             calc_rgba(x, v1c.r, rgba_diff.r),
             calc_rgba(x, v1c.g, rgba_diff.g),
             calc_rgba(x, v1c.b, rgba_diff.b),
             calc_rgba(x, v1c.a, rgba_diff.a),
         );
-        if d > 0 {
-            d -= 2 * y_diff;
+        if d >= 0 {
+            d += d_incr_gte_0;
         } else {
             y += y_incr;
-            d += 2 * (x_diff - y_diff);
+            d += d_incr_lt_0;
         }
         if xy_flipped {
             draw_buffer.push(ToDraw::new(y, x, color));
