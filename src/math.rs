@@ -1,8 +1,23 @@
 use nalgebra as na;
 use std::cmp;
+use std::ops::{Add, Mul};
 
+#[derive(Debug, Clone, Copy)]
+pub struct OrdFloat(pub f32);
 
-pub struct OrdFloat(f32);
+impl Add for OrdFloat {
+    type Output = OrdFloat;
+    fn add(self, rhs: Self) -> Self::Output {
+        OrdFloat(self.0 + rhs.0)
+    }
+}
+
+impl Mul for OrdFloat {
+    type Output = OrdFloat;
+    fn mul(self, rhs: Self) -> Self::Output {
+        OrdFloat(self.0 * rhs.0)
+    }
+}
 
 impl PartialEq for OrdFloat {
     fn eq(&self, other: &Self) -> bool {
@@ -21,6 +36,18 @@ impl PartialOrd for OrdFloat {
 impl Ord for OrdFloat {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         self.partial_cmp(other).unwrap()
+    }
+}
+
+impl From<f32> for OrdFloat {
+    fn from(value: f32) -> Self {
+        OrdFloat(value)
+    }
+}
+
+impl From<OrdFloat> for f32 {
+    fn from(value: OrdFloat) -> Self {
+        value.0
     }
 }
 

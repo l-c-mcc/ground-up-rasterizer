@@ -1,5 +1,5 @@
-use std::ops::{Add, Mul};
-use crate::math::{f32_compare, f32_equals};
+use std::ops::{Add, Sub, Mul};
+use crate::math::OrdFloat;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -24,35 +24,21 @@ impl From<&Color> for Rgba {
     }
 }
 
-//to-do: derive Copy
-#[derive(Debug, Clone)]
+#[derive(PartialEq,Eq,PartialOrd,Ord,Debug,Clone)]
 pub struct Rgba {
-    pub r: f32,
-    pub g: f32,
-    pub b: f32,
-    pub a: f32,
-}
-
-impl PartialOrd for Rgba {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        // to-do: NaN case
-        f32_compare(self.a, other.a)
-    }
-}
-
-impl Ord for Rgba {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
-    }
+    pub r: OrdFloat,
+    pub g: OrdFloat,
+    pub b: OrdFloat,
+    pub a: OrdFloat,
 }
 
 impl Rgba {
     pub fn color(r: f32, g: f32, b: f32) -> Self {
-        Self { r, g, b, a: 1.0 }
+        Self { r: OrdFloat(r), g: OrdFloat(g), b: OrdFloat(b), a: OrdFloat(1.0) }
     }
 
     pub fn color_a(r: f32, g: f32, b: f32, a: f32) -> Self {
-        Self { r, g, b, a }
+        Self { r: OrdFloat(r), g: OrdFloat(g), b: OrdFloat(b), a: OrdFloat(a) }
     }
 }
 
@@ -61,11 +47,11 @@ impl From<&Rgba> for u32 {
         fn to_8_bytes(c: f32) -> u32 {
             (c * 255.0) as u32
         }
-        let mut color: u32 = to_8_bytes(rgba.r);
+        let mut color: u32 = to_8_bytes(rgba.r.0);
         color <<= 8;
-        color |= to_8_bytes(rgba.g);
+        color |= to_8_bytes(rgba.g.0);
         color <<= 8;
-        color |= to_8_bytes(rgba.b);
+        color |= to_8_bytes(rgba.b.0);
         color
     }
 }
@@ -75,30 +61,30 @@ impl Add for &Rgba {
 
     fn add(self, rhs: Self) -> Self::Output {
         Rgba::color_a(
-            self.r + rhs.r,
-            self.g + rhs.g,
-            self.b + rhs.b,
-            self.a + rhs.a,
+            self.r.0 + rhs.r.0,
+            self.g.0 + rhs.g.0,
+            self.b.0 + rhs.b.0,
+            self.a.0 + rhs.a.0,
         )
     }
 }
 
-impl PartialEq for Rgba {
-    fn eq(&self, other: &Self) -> bool {
-        let r = f32_equals(self.r, other.r);
-        let g = f32_equals(self.g, other.g);
-        let b = f32_equals(self.b, other.b);
-        let a = f32_equals(self.a, other.a);
-        r && g && b && a
+impl Sub for &Rgba {
+    type Output = Rgba;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Rgba::color_a(
+            self.r.0 - rhs.r.0,
+            self.g.0 - rhs.g.0,
+            self.b.0 - rhs.b.0,
+            self.a.0 - rhs.a.0,
+        )
     }
 }
-
-impl Eq for Rgba {}
 
 impl Mul<f32> for &Rgba {
     type Output = Rgba;
     fn mul(self, rhs: f32) -> Self::Output {
-        Rgba::color_a(self.r * rhs, self.g * rhs, self.b * rhs, self.a * rhs)
+        Rgba::color_a(self.r.0 * rhs, self.g.0 * rhs, self.b.0 * rhs, self.a.0 * rhs)
     }
 }
 

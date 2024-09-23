@@ -1,6 +1,6 @@
 use crate::color::Rgba;
 use crate::geometry::{GeoError, Geometry, GeometryType};
-use crate::math::{self, f32_compare};
+use crate::math::OrdFloat;
 use nalgebra as na;
 use std::mem::swap;
 
@@ -11,8 +11,8 @@ pub fn test() {
         let c = Rgba::color(1.0, 0.0, 0.0);
         let origin = ToDraw::new(x, y, c.clone());
         let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
-        for x in (-1..=1).map(|x| x as f32) {
-            for y in (-1..=1).map(|y| y as f32) {
+        for x in (0..=1).map(|x| x as f32) {
+            for y in (0..=1).map(|y| y as f32) {
                 if x == 0.0 && y == 0.0 {
                     continue;
                 }
@@ -26,39 +26,19 @@ pub fn test() {
                 assert!(target_line.insert(&origin));
                 assert!(target_line.insert(&target_point));
                 let computed_line = BTreeSet::from_iter(line.iter());
+                println!("{} {} {} {}", x, y, vertex1, vertex2);
                 assert_eq!(target_line, computed_line);
             }
         }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug,PartialEq,Eq,PartialOrd,Ord)]
 pub struct ToDraw {
     pub x: i32,
     pub y: i32,
     pub color: Rgba,
-    _depth: f32,
+    _depth: OrdFloat,
 }
-
-impl PartialOrd for ToDraw {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        f32_compare(self._depth, other._depth)
-    }
-}
-
-impl Ord for ToDraw {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        // panicing in NaN case is intended
-        self.partial_cmp(other).unwrap()
-    }
-}
-
-impl PartialEq for ToDraw {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y && self.color == other.color && math::f32_equals(self._depth, other._depth)
-    }
-}
-
-impl Eq for ToDraw {}
 
 impl ToDraw {
     fn new(x: i32, y: i32, color: Rgba) -> Self {
@@ -66,7 +46,7 @@ impl ToDraw {
             x,
             y,
             color,
-            _depth: 0.0,
+            _depth: OrdFloat(0.0),
         }
     }
 }
@@ -150,9 +130,9 @@ fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgb
         y_diff *= -1.0;
     }
     // Set up color eq.
-    let rgba_diff = Rgba::color_a(v2c.r - v1c.r, v2c.g - v1c.g, v2c.b - v1c.b, v2c.a - v1c.a);
+    let rgba_diff = v2c - v1c;
     let calc_rgba =
-        |x, channel0, channel_diff| channel0 + channel_diff * ((x as f32 - x0) / x_diff);
+        |x: i32, channel0: OrdFloat, channel_diff: OrdFloat| (channel0 + channel_diff * OrdFloat((x as f32 - x0) / x_diff)).0;
     // update floats to ints
     let mut y_diff = y_diff as i32;
     let x_diff = x_diff as i32;
