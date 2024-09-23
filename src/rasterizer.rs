@@ -156,12 +156,12 @@ fn rasterize_triangle(
     v2c: &Rgba,
     v3c: &Rgba,
 ) -> Vec<ToDraw> {
-    let x0 = v1[0];
-    let x1 = v2[0];
-    let x2 = v3[0];
-    let y0 = v1[1];
-    let y1 = v2[1];
-    let y2 = v3[1];
+    let x0 = v1[0].round();
+    let x1 = v2[0].round();
+    let x2 = v3[0].round();
+    let y0 = v1[1].round();
+    let y1 = v2[1].round();
+    let y2 = v3[1].round();
     let f12 = |x, y| (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1;
     let f20 = |x, y| (y2 - y0) * x + (x0 - x2) * y + x2 * y0 - x0 * y2;
     let f01 = |x, y| (y0 - y1) * x + (x1 - x0) * y + x0 * y1 - x1 * y0;
@@ -171,10 +171,10 @@ fn rasterize_triangle(
     let alpha = |x, y| f12(x, y) / alpha_denom;
     let beta = |x, y| f20(x, y) / beta_denom;
     let lambda = |x, y| f01(x, y) / lambda_denom;
-    let x_min = x0.min(x1).min(x2).round() as usize;
-    let x_max = x0.max(x1).max(x2).round() as usize;
-    let y_min = y0.min(y1).min(y2).round() as usize;
-    let y_max = y0.max(y1).max(y2).round() as usize;
+    let x_min = x0.min(x1).min(x2) as usize;
+    let x_max = x0.max(x1).max(x2) as usize;
+    let y_min = y0.min(y1).min(y2) as usize;
+    let y_max = y0.max(y1).max(y2) as usize;
     let within_bounds = |val| (0.0..=1.0).contains(&val);
     let mut draw_buffer = vec![];
     for y in (y_min..=y_max).map(|y| y as f32) {
@@ -216,15 +216,6 @@ mod tests {
     // to-do: handle depth when in 3d
     #[test]
     fn test_line() {
-        // (x,y), (x,y)
-        // (1,1), (1,0)
-        // (1,1), (1,2)
-        // (1,1), (0,1)
-        // (1,1), (2,1)
-        // (1,1), (0,0)
-        // (1,1), (2,2)
-        // (1,1), (0,2)
-        // (1,1), (2,0)
         let x = 1;
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
@@ -267,6 +258,50 @@ mod tests {
             &c,
             &c,
         );
-        assert_eq!(target_line, computed_line);
+        assert_eq!(
+            BTreeSet::from_iter(target_line.into_iter()),
+            BTreeSet::from_iter(computed_line.into_iter()),
+        );
+    }
+
+    #[test]
+    fn test_triangle() {
+        let color: Rgba = (&Color::Red).into();
+        let v1 = na::Vector4::new(0.0, 0.0, 0.0, 1.0);
+        let v2 = na::Vector4::new(2.0, 0.0, 0.0, 1.0);
+        let v3 = na::Vector4::new(1.0, 1.0, 0.0, 1.0);
+        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let target_triangle = vec![
+            ToDraw::new(v1.x as i32, v1.y as i32, color.clone()),
+            ToDraw::new(v2.x as i32, v2.y as i32, color.clone()),
+            ToDraw::new(v3.x as i32, v3.y as i32, color.clone()),
+            ToDraw::new((v1.x as i32 + v2.x as i32) / 2, v1.y as i32, color.clone()),
+        ];
+        assert_eq!(
+            BTreeSet::from_iter(target_triangle.into_iter()),
+            BTreeSet::from_iter(computed_triangle.into_iter())
+        );
+    }
+    #[test]
+    fn test_triangle_fp() {
+        let color: Rgba = (&Color::Red).into();
+        let v1 = na::Vector4::new(0.1, 0.2, 0.0, 1.0);
+        let v2 = na::Vector4::new(1.8, 0.3, 0.0, 1.0);
+        let v3 = na::Vector4::new(1.1, 0.9, 0.0, 1.0);
+        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let target_triangle = vec![
+            ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone()),
+            ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone()),
+            ToDraw::new(v3.x.round() as i32, v3.y.round() as i32, color.clone()),
+            ToDraw::new(
+                (v1.x.round() as i32 + v2.x.round() as i32) / 2,
+                v1.y.round() as i32,
+                color.clone(),
+            ),
+        ];
+        assert_eq!(
+            BTreeSet::from_iter(target_triangle.into_iter()),
+            BTreeSet::from_iter(computed_triangle.into_iter())
+        );
     }
 }
