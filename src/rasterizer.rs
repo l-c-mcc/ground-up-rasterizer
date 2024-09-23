@@ -196,6 +196,8 @@ fn rasterize_triangle(
 
 #[cfg(test)]
 mod tests {
+    use crate::color::Color;
+
     use super::*;
     use std::collections::BTreeSet;
 
@@ -246,5 +248,25 @@ mod tests {
                 assert_eq!(target_line, computed_line);
             }
         }
+    }
+
+    #[test]
+    fn test_fp_line() {
+        let x0: f32 = 0.8;
+        let y0: f32 = 1.1;
+        let x1: f32 = 2.4;
+        let y1: f32 = 2.3;
+        let c: Rgba = (&Color::Red).into();
+        let target_line = vec![
+            ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone()),
+            ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone()),
+        ];
+        let computed_line = draw_line(
+            &na::Vector4::new(x0, y0, 0.0, 1.0),
+            &na::Vector4::new(x1, y1, 0.0, 1.0),
+            &c,
+            &c,
+        );
+        assert_eq!(target_line, computed_line);
     }
 }
