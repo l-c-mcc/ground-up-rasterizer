@@ -11,6 +11,10 @@ pub fn point(x: f32, y: f32, z: f32) -> na::Vector4<f32> {
     na::Vector4::new(x, y, z, 1.0)
 }
 
+pub fn direction(x: f32, y: f32, z: f32) -> na::Vector4<f32> {
+    na::Vector4::new(x, y, z, 0.0)
+}
+
 pub fn line(t: f32) -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
     let x = (300.0 * t.cos()) + 500.0;

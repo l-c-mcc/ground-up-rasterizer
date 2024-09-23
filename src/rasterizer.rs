@@ -197,18 +197,18 @@ fn rasterize_triangle(
 #[cfg(test)]
 mod tests {
     use crate::color::Color;
+    use crate::geometry::point;
 
     use super::*;
     use std::collections::BTreeSet;
 
-    //to-do: test ToDraw equality
     #[test]
     fn test_point() {
         let x = 1;
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
         let target = vec![ToDraw::new(x, y, c.clone())];
-        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
+        let vertex1 = point(x as f32, y as f32, 0.0);
         let vertex2 = vertex1;
         assert_eq!(draw_line(&vertex1, &vertex2, &c, &c), target);
     }
@@ -220,7 +220,7 @@ mod tests {
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
         let origin = ToDraw::new(x, y, c.clone());
-        let vertex1: na::Vector4<f32> = na::Vector4::new(x as f32, y as f32, 0.0, 1.0);
+        let vertex1: na::Vector4<f32> = point(x as f32, y as f32, 0.0);
         for x in (-1..=1).map(|x| x as f32) {
             for y in (-1..=1).map(|y| y as f32) {
                 if x == 0.0 && y == 0.0 {
@@ -253,8 +253,8 @@ mod tests {
             ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone()),
         ];
         let computed_line = draw_line(
-            &na::Vector4::new(x0, y0, 0.0, 1.0),
-            &na::Vector4::new(x1, y1, 0.0, 1.0),
+            &point(x0, y0, 0.0),
+            &point(x1, y1, 0.0),
             &c,
             &c,
         );
@@ -267,9 +267,9 @@ mod tests {
     #[test]
     fn test_triangle() {
         let color: Rgba = (&Color::Red).into();
-        let v1 = na::Vector4::new(0.0, 0.0, 0.0, 1.0);
-        let v2 = na::Vector4::new(2.0, 0.0, 0.0, 1.0);
-        let v3 = na::Vector4::new(1.0, 1.0, 0.0, 1.0);
+        let v1 = point(0.0, 0.0, 0.0);
+        let v2 = point(2.0, 0.0, 0.0);
+        let v3 = point(1.0, 1.0, 0.0);
         let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
         let target_triangle = vec![
             ToDraw::new(v1.x as i32, v1.y as i32, color.clone()),
@@ -285,9 +285,9 @@ mod tests {
     #[test]
     fn test_triangle_fp() {
         let color: Rgba = (&Color::Red).into();
-        let v1 = na::Vector4::new(0.1, 0.2, 0.0, 1.0);
-        let v2 = na::Vector4::new(1.8, 0.3, 0.0, 1.0);
-        let v3 = na::Vector4::new(1.1, 0.9, 0.0, 1.0);
+        let v1 = point(0.1, 0.2, 0.0);
+        let v2 = point(1.8, 0.3, 0.0);
+        let v3 = point(1.1, 0.9, 0.0);
         let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
         let target_triangle = vec![
             ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone()),
