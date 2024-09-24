@@ -1,6 +1,4 @@
-use nalgebra::geometry;
-
-use crate::geometry::Geometry;
+use crate::geometry::{Geometry, Point, point};
 
 /*
 constructor for world
@@ -44,6 +42,10 @@ impl Camera {
         }
     }
 
+    pub fn position(&self) -> Point {
+        point(self.x as f32, self.y as f32, 0.0)
+    }
+
     pub fn reposition(&mut self, x: i32, y: i32) {
         self.x = x;
         self.y = y;
@@ -55,8 +57,8 @@ impl Camera {
 
     fn obj_view(&self, obj: &Geometry) -> bool {
         let in_bounds = |x, y| {
-            let x_range = (self.x as f32..(self.x + self.width) as f32);
-            let y_range = (self.y as f32..(self.y + self.height) as f32);
+            let x_range = self.x as f32..(self.x + self.width) as f32;
+            let y_range = self.y as f32..(self.y + self.height) as f32;
             x_range.contains(&x) && y_range.contains(&y)
         };
         for vec in &obj.vertex_locations {

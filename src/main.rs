@@ -8,8 +8,6 @@ mod rasterizer;
 mod timer;
 mod world;
 
-use std::f32::consts::PI;
-
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
 use minifb::{Window, WindowOptions};
@@ -55,7 +53,7 @@ fn main() {
     let mut t3 = triangle();
     t2.transform(math::translation_matrix(na::Vector3::new(
         (width + 10) as f32,
-        (height + 10) as f32,
+        0.0,
         0.0,
     )));
     t3.transform(math::translation_matrix(na::Vector3::new(
@@ -70,12 +68,11 @@ fn main() {
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     while window.is_open() {
         let current_time = timer.update();
-        println!("{current_time}");
         camera.reposition((current_time * 100.0) as i32, 0);
         let to_render = camera.world_view(&world);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
-        draw_buffer.append(&mut rasterize_geometry(&to_render).unwrap_or_else(|error| {
+        draw_buffer.append(&mut rasterize_geometry(&to_render, camera.position()).unwrap_or_else(|error| {
             match error {
                 GeoError::NotDiv3(geo) => eprintln!(
                     "The number of vertices of the following triangle is not divisible by 3: {:?}",

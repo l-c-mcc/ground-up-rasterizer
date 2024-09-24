@@ -7,11 +7,14 @@ pub enum GeoError {
     NoVertices(Geometry),
 }
 
-pub fn point(x: f32, y: f32, z: f32) -> na::Vector4<f32> {
+pub type Point = na::Vector4<f32>;
+pub type Direction = na::Vector4<f32>;
+
+pub fn point(x: f32, y: f32, z: f32) -> Point {
     na::Vector4::new(x, y, z, 1.0)
 }
 
-pub fn direction(x: f32, y: f32, z: f32) -> na::Vector4<f32> {
+pub fn direction(x: f32, y: f32, z: f32) -> Direction {
     na::Vector4::new(x, y, z, 0.0)
 }
 
