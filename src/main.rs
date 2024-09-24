@@ -6,6 +6,7 @@ mod geometry;
 mod math;
 mod rasterizer;
 mod timer;
+mod world;
 
 use std::f32::consts::PI;
 
@@ -15,6 +16,7 @@ use minifb::{Window, WindowOptions};
 use nalgebra as na;
 use rasterizer::rasterize_geometry;
 use timer::Timer;
+use world::{Camera, World};
 
 /*
 rough rendering pipeline:
@@ -42,22 +44,38 @@ Rasterization to-do
  */
 
 fn main() {
+    let mut timer = Timer::default();
+
     let width = 1000;
     let height = 1000;
-    let mut _timer = Timer::default();
-    let mut shape = triangle();
-    let translation = math::translation_matrix(shape.vec_from_origin().unwrap());
-    let translation2 = math::translation_matrix(shape.vec_from_origin().unwrap() * -1.0);
-    let rotation = math::y_rotation_matrix(PI / 2.5);
-    let scalar = math::scale_matrix(na::Vector3::new(5.0, -1.5, 0.5));
-    shape.transform(translation2);
-    shape.transform(rotation);
-    shape.transform(scalar);
-    shape.transform(translation);
-    let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
-    let mut draw_buffer = vec![];
-    draw_buffer.append(
-        &mut rasterize_geometry(&vec![shape]).unwrap_or_else(|error| {
+    let mut world = World::default();
+    let mut camera = Camera::new(width as i32, height as i32);
+    let t1 = triangle();
+    let mut t2 = triangle();
+    let mut t3 = triangle();
+    t2.transform(math::translation_matrix(na::Vector3::new(
+        (width + 10) as f32,
+        (height + 10) as f32,
+        0.0,
+    )));
+    t3.transform(math::translation_matrix(na::Vector3::new(
+        (width / 2) as f32,
+        0.0,
+        0.0,
+    )));
+    world.insert(t1);
+    world.insert(t2);
+    world.insert(t3);
+
+    let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
+    while window.is_open() {
+        let current_time = timer.update();
+        println!("{current_time}");
+        camera.reposition((current_time * 100.0) as i32, 0);
+        let to_render = camera.world_view(&world);
+        let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
+        let mut draw_buffer = vec![];
+        draw_buffer.append(&mut rasterize_geometry(&to_render).unwrap_or_else(|error| {
             match error {
                 GeoError::NotDiv3(geo) => eprintln!(
                     "The number of vertices of the following triangle is not divisible by 3: {:?}",
@@ -66,16 +84,12 @@ fn main() {
                 e => panic!("{:?}", e),
             };
             vec![]
-        }),
-    );
-    for obj in draw_buffer {
-        if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
-            buffer[index] = u32::from(&obj.color);
+        }));
+        for obj in draw_buffer {
+            if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
+                buffer[index] = u32::from(&obj.color);
+            }
         }
-    }
-
-    let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
-    while window.is_open() {
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
 }

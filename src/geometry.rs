@@ -79,6 +79,7 @@ pub fn cube(c: Color) -> Geometry {
 #[derive(Debug, Clone)]
 pub struct Geometry {
     pub vertices: Vec<Vertex>,
+    // to-do: point type alias
     pub vertex_locations: Vec<na::Vector4<f32>>,
     pub geo_type: GeometryType,
     center: Option<na::Vector4<f32>>,
