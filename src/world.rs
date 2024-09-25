@@ -1,17 +1,4 @@
-use crate::geometry::{Geometry, Point, point};
-
-/*
-constructor for world
-
-constructor for camera
-- height and width
-
-insert objects -> world
-
-move camera
-
-camera <- world, return a list of ref objects
- */
+use crate::geometry::{point, Geometry, Point};
 
 #[derive(Default)]
 pub struct World {

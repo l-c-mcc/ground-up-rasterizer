@@ -16,30 +16,7 @@ use rasterizer::rasterize_geometry;
 use timer::Timer;
 use world::{Camera, World};
 
-/*
-rough rendering pipeline:
-- Input assembler (handle geometry)
-- vertex shader
-- rasterize
-- pixel shading
 
-Implementation order?
-1. handling the idea of vertices with associated info (color?) in
-   3d space within the code
-        a. Vertices can be used to form lines and triangles.
-2. local space -> world space -> view space transformations -> canonical view volume -> window
-    local space -> world space: transform/scale/rotate each object as neeeded
-    world space -> view space: matrix transform all points
-    view space -> canonical view volume: more matrix transformations?
-    canonical view volume -> window: scale view volume by resolution
-3. rasterization
-
-Rasterization to-do
-1. Geometry object needs to more gracefully handle vertices
-2. Test line objects with >2 points
-3. Triangle rasterization
-4. Line clipping
- */
 
 fn main() {
     let mut timer = Timer::default();

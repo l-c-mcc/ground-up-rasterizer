@@ -25,7 +25,10 @@ impl ToDraw {
 
 // to-do: handle depth
 // to-do: switch geomoetry from vec to one obj
-pub fn rasterize_geometry(geometry: &Vec<&Geometry>, realign: Point) -> Result<Vec<ToDraw>, GeoError> {
+pub fn rasterize_geometry(
+    geometry: &Vec<&Geometry>,
+    realign: Point,
+) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];
     for obj in geometry {
         match obj.geo_type {
@@ -75,7 +78,13 @@ pub fn rasterize_geometry(geometry: &Vec<&Geometry>, realign: Point) -> Result<V
 /// Takes two points and returns a ToDraw vector mapping the corresponding line
 /// to pixel values.
 /// to-do: color params do not need to be refs
-fn draw_line(v1: &na::Vector4<f32>, v2: &na::Vector4<f32>, v1c: &Rgba, v2c: &Rgba, realign: &Point) -> Vec<ToDraw> {
+fn draw_line(
+    v1: &na::Vector4<f32>,
+    v2: &na::Vector4<f32>,
+    v1c: &Rgba,
+    v2c: &Rgba,
+    realign: &Point,
+) -> Vec<ToDraw> {
     // Prepare vars
     let mut v1c = v1c;
     let mut v2c = v2c;
@@ -213,7 +222,10 @@ mod tests {
         let target = vec![ToDraw::new(x, y, c.clone())];
         let vertex1 = point(x as f32, y as f32, 0.0);
         let vertex2 = vertex1;
-        assert_eq!(draw_line(&vertex1, &vertex2, &c, &c, &point(0.0, 0.0, 0.0)), target);
+        assert_eq!(
+            draw_line(&vertex1, &vertex2, &c, &c, &point(0.0, 0.0, 0.0)),
+            target
+        );
     }
 
     // to-do: handle depth when in 3d
@@ -255,7 +267,13 @@ mod tests {
             ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone()),
             ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone()),
         ];
-        let computed_line = draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c, &point(0.0, 0.0, 0.0));
+        let computed_line = draw_line(
+            &point(x0, y0, 0.0),
+            &point(x1, y1, 0.0),
+            &c,
+            &c,
+            &point(0.0, 0.0, 0.0),
+        );
         assert_eq!(
             BTreeSet::from_iter(target_line.into_iter()),
             BTreeSet::from_iter(computed_line.into_iter()),
@@ -268,7 +286,8 @@ mod tests {
         let v1 = point(0.0, 0.0, 0.0);
         let v2 = point(2.0, 0.0, 0.0);
         let v3 = point(1.0, 1.0, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &point(0.0, 0.0, 0.0));
+        let computed_triangle =
+            rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &point(0.0, 0.0, 0.0));
         let target_triangle = vec![
             ToDraw::new(v1.x as i32, v1.y as i32, color.clone()),
             ToDraw::new(v2.x as i32, v2.y as i32, color.clone()),
@@ -286,7 +305,8 @@ mod tests {
         let v1 = point(0.1, 0.2, 0.0);
         let v2 = point(1.8, 0.3, 0.0);
         let v3 = point(1.1, 0.9, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &point(0.0, 0.0, 0.0));
+        let computed_triangle =
+            rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &point(0.0, 0.0, 0.0));
         let target_triangle = vec![
             ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone()),
             ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone()),
