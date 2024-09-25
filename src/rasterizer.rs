@@ -1,7 +1,6 @@
 use crate::color::Rgba;
 use crate::geometry::{GeoError, Geometry, GeometryType, Point};
 use crate::math::OrdFloat;
-use nalgebra as na;
 use std::mem::swap;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -79,8 +78,8 @@ pub fn rasterize_geometry(
 /// to pixel values.
 /// to-do: color params do not need to be refs
 fn draw_line(
-    v1: &na::Vector4<f32>,
-    v2: &na::Vector4<f32>,
+    v1: &Point,
+    v2: &Point,
     v1c: &Rgba,
     v2c: &Rgba,
     realign: &Point,
@@ -160,9 +159,9 @@ fn draw_line(
 }
 
 fn rasterize_triangle(
-    v1: &na::Vector4<f32>,
-    v2: &na::Vector4<f32>,
-    v3: &na::Vector4<f32>,
+    v1: &Point,
+    v2: &Point,
+    v3: &Point,
     v1c: &Rgba,
     v2c: &Rgba,
     v3c: &Rgba,
@@ -235,7 +234,7 @@ mod tests {
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
         let origin = ToDraw::new(x, y, c.clone());
-        let vertex1: na::Vector4<f32> = point(x as f32, y as f32, 0.0);
+        let vertex1: Point = point(x as f32, y as f32, 0.0);
         for x in (-1..=1).map(|x| x as f32) {
             for y in (-1..=1).map(|y| y as f32) {
                 if x == 0.0 && y == 0.0 {
