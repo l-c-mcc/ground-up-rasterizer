@@ -1,4 +1,6 @@
 use crate::geometry::{point, Geometry, Point};
+use crate::math::translation_matrix;
+use nalgebra as na;
 
 #[derive(Default)]
 pub struct World {
@@ -8,8 +10,8 @@ pub struct World {
 pub struct Camera {
     x: f32,
     y: f32,
-    height: i32,
-    width: i32,
+    height: f32,
+    width: f32,
 }
 
 impl World {
@@ -19,8 +21,9 @@ impl World {
 }
 
 impl Camera {
-    pub fn new(width: i32, height: i32) -> Self {
-        assert!(width >= 1 && height >= 1);
+    pub fn new(width: f32, height: f32) -> Self {
+        // to-do: rethink this
+        //assert!(width >= 1.0 && height >= 1.0);
         Self {
             x: 0.0,
             y: 0.0,
@@ -43,8 +46,25 @@ impl Camera {
         self.y += y;
     }
 
-    pub fn world_view<'a>(&self, world: &'a World) -> Vec<&'a Geometry> {
-        world.objects.iter().filter(|x| self.obj_view(x)).collect()
+    pub fn world_view (
+        &self,
+        world: &World,
+        target_width: f32,
+        target_height: f32,
+    ) -> Vec<Geometry> {
+        let mut in_view: Vec<Geometry> = world
+            .objects
+            .iter()
+            .filter(|x| self.obj_view(x))
+            .map(|x| (*x).clone())
+            .collect();
+        let translation = translation_matrix(na::Vector3::new(-self.x, -self.y, 0.0));
+        for obj in &mut in_view {
+            obj.transform(translation);
+            // to-do: update in 3d
+            obj.camera_to_screen(self.width, self.height, target_width, target_height);
+        }
+        in_view
     }
 
     fn obj_view(&self, obj: &Geometry) -> bool {

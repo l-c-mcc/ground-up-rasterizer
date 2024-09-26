@@ -23,7 +23,7 @@ fn main() {
     let width = 1000;
     let height = 1000;
     let mut world = World::default();
-    let mut camera = Camera::new(width as i32, height as i32);
+    let mut camera = Camera::new(width as f32, height as f32);
     let t1 = triangle();
     let mut t2 = triangle();
     let mut t3 = triangle();
@@ -49,7 +49,7 @@ fn main() {
         let x = x * delta_time;
         let y = y * delta_time;
         camera.translate(x, y);
-        let to_render = camera.world_view(&world);
+        let to_render = camera.world_view(&world, width as f32, height as f32);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
         draw_buffer.append(

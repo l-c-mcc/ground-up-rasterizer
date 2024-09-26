@@ -25,7 +25,7 @@ impl ToDraw {
 // to-do: handle depth
 // to-do: switch geomoetry from vec to one obj
 pub fn rasterize_geometry(
-    geometry: &Vec<&Geometry>,
+    geometry: &Vec<Geometry>,
     realign: Point,
 ) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];

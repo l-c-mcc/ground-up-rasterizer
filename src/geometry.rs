@@ -119,6 +119,21 @@ impl Geometry {
     pub fn vec_from_origin(&self) -> Option<na::Vector3<f32>> {
         self.center.map(|c| na::Vector3::new(c.x, c.y, c.z))
     }
+
+    pub fn camera_to_screen(
+        &mut self,
+        camera_width: f32,
+        camera_height: f32,
+        screen_width: f32,
+        screen_height: f32,
+    ) {
+        for vertex in &mut self.vertex_locations {
+            let x_ratio = vertex.x / camera_width;
+            let y_ratio = vertex.y / camera_height;
+            vertex.x = x_ratio * screen_width;
+            vertex.y = y_ratio * screen_height;
+        }
+    }
 }
 
 impl Vertex {
