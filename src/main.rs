@@ -48,7 +48,7 @@ fn main() {
         let (x, y) = move_camera(&window);
         let x = x * delta_time;
         let y = y * delta_time;
-        camera.transalte(x, y);
+        camera.translate(x, y);
         let to_render = camera.world_view(&world);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
@@ -75,7 +75,7 @@ fn main() {
 
 fn move_camera(window: &Window) -> (f32, f32) {
     use Key::{A, D, S, W};
-    let speed = 400.0;
+    let speed = 500.0;
     let mut x_vel = 0.0;
     let mut y_vel = 0.0;
     let move_options = vec![

@@ -161,12 +161,12 @@ fn rasterize_triangle(
     v3c: &Rgba,
     realign: &Point,
 ) -> Vec<ToDraw> {
-    let x0 = v1[0].round() - realign.x;
-    let x1 = v2[0].round() - realign.x;
-    let x2 = v3[0].round() - realign.x;
-    let y0 = v1[1].round() - realign.y;
-    let y1 = v2[1].round() - realign.y;
-    let y2 = v3[1].round() - realign.y;
+    let x0 = (v1[0] - realign.x).round();
+    let x1 = (v2[0] - realign.x).round();
+    let x2 = (v3[0] - realign.x).round();
+    let y0 = (v1[1] - realign.y).round();
+    let y1 = (v2[1] - realign.y).round();
+    let y2 = (v3[1] - realign.y).round();
     let f12 = |x, y| (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1;
     let f20 = |x, y| (y2 - y0) * x + (x0 - x2) * y + x2 * y0 - x0 * y2;
     let f01 = |x, y| (y0 - y1) * x + (x1 - x0) * y + x0 * y1 - x1 * y0;

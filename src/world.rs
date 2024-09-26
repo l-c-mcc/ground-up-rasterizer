@@ -38,7 +38,7 @@ impl Camera {
         self.y = y;
     }
 
-    pub fn transalte(&mut self, x: f32, y: f32) {
+    pub fn translate(&mut self, x: f32, y: f32) {
         self.x += x;
         self.y += y;
     }
