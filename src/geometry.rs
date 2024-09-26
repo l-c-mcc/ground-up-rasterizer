@@ -22,8 +22,7 @@ pub fn line(t: f32) -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
     let x = (300.0 * t.cos()) + 500.0;
     let y = (300.0 * t.sin()) + 500.0;
-    line.vertex_locations
-        .push(point(500.0, 500.0, 0.0));
+    line.vertex_locations.push(point(500.0, 500.0, 0.0));
     line.vertex_locations.push(point(x, y, 0.0));
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Blue));
@@ -32,15 +31,9 @@ pub fn line(t: f32) -> Geometry {
 
 pub fn triangle() -> Geometry {
     let mut triangle = Geometry::new(GeometryType::Triangle);
-    triangle
-        .vertex_locations
-        .push(point(450.0, 400.0, 0.0));
-    triangle
-        .vertex_locations
-        .push(point(600.0, 600.0, 0.0));
-    triangle
-        .vertex_locations
-        .push(point(300.0, 600.0, 0.0));
+    triangle.vertex_locations.push(point(450.0, 400.0, 0.0));
+    triangle.vertex_locations.push(point(600.0, 600.0, 0.0));
+    triangle.vertex_locations.push(point(300.0, 600.0, 0.0));
     triangle.vertices.push(Vertex::new(0, Color::Red));
     triangle.vertices.push(Vertex::new(1, Color::Blue));
     triangle.vertices.push(Vertex::new(2, Color::Green));
@@ -50,18 +43,10 @@ pub fn triangle() -> Geometry {
 
 pub fn square(scale: f32) -> Geometry {
     let mut square = Geometry::new(GeometryType::Triangle);
-    square
-        .vertex_locations
-        .push(scale * point(0.0, 0.0, 0.0));
-    square
-        .vertex_locations
-        .push(scale * point(1.0, 0.0, 0.0));
-    square
-        .vertex_locations
-        .push(scale * point(0.0, 1.0, 0.0));
-    square
-        .vertex_locations
-        .push(scale * point(1.0, 1.0, 0.0));
+    square.vertex_locations.push(scale * point(0.0, 0.0, 0.0));
+    square.vertex_locations.push(scale * point(1.0, 0.0, 0.0));
+    square.vertex_locations.push(scale * point(0.0, 1.0, 0.0));
+    square.vertex_locations.push(scale * point(1.0, 1.0, 0.0));
     square.vertices.push(Vertex::new(0, Color::Blue));
     square.vertices.push(Vertex::new(1, Color::White));
     square.vertices.push(Vertex::new(2, Color::Red));

@@ -77,13 +77,7 @@ pub fn rasterize_geometry(
 /// Takes two points and returns a ToDraw vector mapping the corresponding line
 /// to pixel values.
 /// to-do: color params do not need to be refs
-fn draw_line(
-    v1: &Point,
-    v2: &Point,
-    v1c: &Rgba,
-    v2c: &Rgba,
-    realign: &Point,
-) -> Vec<ToDraw> {
+fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba, realign: &Point) -> Vec<ToDraw> {
     // Prepare vars
     let mut v1c = v1c;
     let mut v2c = v2c;

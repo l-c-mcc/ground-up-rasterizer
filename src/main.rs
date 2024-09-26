@@ -10,13 +10,12 @@ mod world;
 
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
-use minifb::{Window, WindowOptions};
+use math::f32_equals;
+use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
 use rasterizer::rasterize_geometry;
 use timer::Timer;
 use world::{Camera, World};
-
-
 
 fn main() {
     let mut timer = Timer::default();
@@ -45,8 +44,11 @@ fn main() {
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     while window.is_open() {
         timer.tick();
-        let current_time = timer.time_elapsed_secs();
-        camera.reposition((current_time * 100.0) as i32, 0);
+        let delta_time = timer.delta_time_secs();
+        let (x, y) = move_camera(&window);
+        let x = x * delta_time;
+        let y = y * delta_time;
+        camera.transalte(x, y);
         let to_render = camera.world_view(&world);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
@@ -69,6 +71,31 @@ fn main() {
         }
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
+}
+
+fn move_camera(window: &Window) -> (f32, f32) {
+    use Key::{A, D, S, W};
+    let speed = 400.0;
+    let mut x_vel = 0.0;
+    let mut y_vel = 0.0;
+    let move_options = vec![
+        (W, 0.0, -speed),
+        (A, -speed, 0.0),
+        (S, 0.0, speed),
+        (D, speed, 0.0),
+    ];
+    for (opt, x, y) in move_options {
+        if window.is_key_down(opt) {
+            x_vel += x;
+            y_vel += y;
+        }
+    }
+    let sqrt2 = 2.0_f32.sqrt();
+    if !f32_equals(x_vel, 0.0) && !f32_equals(y_vel, 0.0) {
+        x_vel /= sqrt2;
+        y_vel /= sqrt2;
+    }
+    (x_vel, y_vel)
 }
 
 fn xy_to_1d(x: i32, y: i32, width: i32, height: i32) -> Option<usize> {
