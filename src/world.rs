@@ -46,7 +46,7 @@ impl Camera {
         self.y += y;
     }
 
-    pub fn world_view (
+    pub fn world_view(
         &self,
         world: &World,
         target_width: f32,
@@ -69,8 +69,8 @@ impl Camera {
 
     fn obj_view(&self, obj: &Geometry) -> bool {
         let in_bounds = |x, y| {
-            let x_range = self.x..self.x + self.width as f32;
-            let y_range = self.y..self.y + self.height as f32;
+            let x_range = self.x..self.x + self.width;
+            let y_range = self.y..self.y + self.height;
             x_range.contains(&x) && y_range.contains(&y)
         };
         for vec in &obj.vertex_locations {
