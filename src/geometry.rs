@@ -3,9 +3,8 @@ use crate::math;
 use nalgebra as na;
 
 #[derive(Debug)]
-pub enum GeoError {
-    NotDiv3(Geometry),
-    NoVertices(Geometry),
+pub enum GeoError<'a> {
+    NotDiv3(&'a Geometry),
 }
 
 pub type Point = na::Vector4<f32>;

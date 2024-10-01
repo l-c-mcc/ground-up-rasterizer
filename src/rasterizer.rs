@@ -44,7 +44,7 @@ pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoEr
             GeometryType::Triangle => {
                 let len = obj.vertices.len();
                 if len % 3 != 0 {
-                    return Err(GeoError::NotDiv3((*obj).clone()));
+                    return Err(GeoError::NotDiv3(obj));
                 }
                 let mut i = 0;
                 while i < len {

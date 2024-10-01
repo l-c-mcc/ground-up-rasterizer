@@ -48,7 +48,6 @@ fn main() {
                     "The number of vertices of the following triangle is not divisible by 3: {:?}",
                     geo
                 ),
-                e => panic!("{:?}", e),
             };
             vec![]
         }));
