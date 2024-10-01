@@ -1,3 +1,4 @@
+use crate::geometry::{Direction, Transform};
 use nalgebra as na;
 use std::cmp;
 use std::ops::{Add, Mul};
@@ -65,35 +66,35 @@ pub fn f32_compare(left: f32, right: f32) -> Option<cmp::Ordering> {
     }
 }
 
-pub fn translation_matrix(vec: na::Vector3<f32>) -> na::Matrix4<f32> {
+pub fn translation_matrix(vec: Direction) -> Transform {
     na::matrix![1.0,0.0,0.0,vec.x;
                 0.0,1.0,0.0,vec.y;
                 0.0,0.0,1.0,vec.z;
                 0.0,0.0,0.0,1.0]
 }
 
-pub fn x_rotation_matrix(theta: f32) -> na::Matrix4<f32> {
+pub fn x_rotation_matrix(theta: f32) -> Transform {
     na::matrix![1.0, 0.0, 0.0, 0.0;
                 0.0, theta.cos(), -(theta.sin()), 0.0;
                 0.0, theta.sin(), theta.cos(), 0.0;
                 0.0, 0.0, 0.0, 1.0]
 }
 
-pub fn y_rotation_matrix(theta: f32) -> na::Matrix4<f32> {
+pub fn y_rotation_matrix(theta: f32) -> Transform {
     na::matrix![theta.cos(), 0.0, theta.sin(), 0.0;
                 0.0, 1.0, 0.0, 0.0;
                 -(theta.sin()), 0.0, theta.cos(), 0.0;
                 0.0, 0.0, 0.0, 1.0]
 }
 
-pub fn z_rotation_matrix(theta: f32) -> na::Matrix4<f32> {
+pub fn z_rotation_matrix(theta: f32) -> Transform {
     na::matrix![theta.cos(), -(theta.sin()), 0.0, 0.0;
                 theta.sin(), theta.cos(), 0.0, 0.0;
                 0.0, 0.0, 1.0, 0.0;
                 0.0, 0.0, 0.0, 1.0]
 }
 
-pub fn scale_matrix(vec: na::Vector3<f32>) -> na::Matrix4<f32> {
+pub fn scale_matrix(vec: na::Vector3<f32>) -> Transform {
     na::matrix![vec.x, 0.0, 0.0, 0.0;
                 0.0, vec.y, 0.0, 0.0;
                 0.0, 0.0, vec.z, 0.0;

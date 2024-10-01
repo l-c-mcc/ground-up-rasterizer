@@ -11,8 +11,8 @@ mod world;
 use std::f32::consts::PI;
 
 use color::{Color, Rgba};
-use geometry::{triangle, GeoError};
-use math::{f32_equals, z_rotation_matrix};
+use geometry::{direction, triangle, GeoError};
+use math::f32_equals;
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
 use rasterizer::rasterize_geometry;
@@ -28,9 +28,9 @@ fn main() {
     let mut camera = Camera::new(width as f32, height as f32);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     let mut t = triangle();
-    t.scale(math::scale_matrix(na::matrix![100.0; -100.0; 100.0]));
-    t.rotation(None, None, Some(z_rotation_matrix(PI / 2.0)));
-    t.translate(math::translation_matrix(na::matrix![500.0; 500.0; 0.0]));
+    t.scale(na::matrix![100.0; -100.0; 100.0]);
+    t.rotation(0.0, 0.0, PI / 2.0);
+    t.translate(direction(500.0, 500.0, 0.0));
     world.insert(t);
     while window.is_open() {
         timer.tick();

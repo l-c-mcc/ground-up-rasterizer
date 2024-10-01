@@ -1,4 +1,5 @@
 use crate::color::Color;
+use crate::math;
 use nalgebra as na;
 
 #[derive(Debug)]
@@ -52,39 +53,36 @@ impl Geometry {
         }
     }
 
-    pub fn set_position(&mut self, pos: Transform) {
-        self.translation = pos;
+    pub fn set_position(&mut self, point: Point) {
+        self.translation = math::translation_matrix(point);
     }
 
-    pub fn translate(&mut self, translation: Transform) {
-        self.translation *= translation;
+    pub fn translate(&mut self, dir: Direction) {
+        self.translation *= math::translation_matrix(dir);
     }
 
-    pub fn rotation(
-        &mut self,
-        x_rotation: Option<Transform>,
-        y_rotation: Option<Transform>,
-        z_rotation: Option<Transform>,
-    ) {
+    pub fn rotation(&mut self, x_rotation: f32, y_rotation: f32, z_rotation: f32) {
         let mut rotation = na::Matrix4::<f32>::identity();
-        let rotations = [x_rotation, y_rotation, z_rotation];
+        let rotations = [
+            math::x_rotation_matrix(x_rotation),
+            math::y_rotation_matrix(y_rotation),
+            math::z_rotation_matrix(z_rotation),
+        ];
         for r in rotations {
-            if let Some(cur_rotation) = r {
-                rotation *= cur_rotation;
-            }
+            rotation *= r;
         }
         self.rotation = rotation;
     }
 
-    pub fn scale(&mut self, scale: Transform) {
-        self.scale = scale;
+    pub fn scale(&mut self, scale: na::Vector3<f32>) {
+        self.scale = math::scale_matrix(scale);
     }
 
     pub fn local_to_world(&self) -> Self {
         let transformation_matrix = self.translation * self.rotation * self.scale;
         let mut copy = self.clone();
         copy.transform(transformation_matrix);
-        return copy;
+        copy
     }
 
     pub fn camera_to_screen(
