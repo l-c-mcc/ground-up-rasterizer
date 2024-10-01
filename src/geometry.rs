@@ -20,7 +20,6 @@ pub struct Geometry {
     translation: Transform,
     rotation: Transform,
     scale: Transform,
-    center: Option<Point>, // to-do: may be deprecated
 }
 
 #[derive(Debug, Clone)]
@@ -44,7 +43,6 @@ impl Geometry {
             translation: na::Matrix4::identity(),
             scale: na::Matrix4::identity(),
             rotation: na::Matrix4::identity(),
-            center: None,
         }
     }
 
@@ -52,34 +50,6 @@ impl Geometry {
         for vertex in &mut self.vertex_locations {
             *vertex = matrix * *vertex;
         }
-        if let Some(c) = self.center {
-            self.center = Some(matrix * c);
-        }
-    }
-
-    fn center(&mut self) -> Result<(), GeoError> {
-        if let Some(first_v) = self.vertex_locations.first() {
-            let mut min = *first_v;
-            let mut max = min;
-            for v in &self.vertex_locations {
-                for i in 0..=2 {
-                    if v[i] < min[i] {
-                        min[i] = v[i];
-                    } else if v[i] > max[i] {
-                        max[i] = v[i];
-                    }
-                }
-            }
-            self.center = Some((max + min) / 2.0);
-            Ok(())
-        } else {
-            Err(GeoError::NoVertices(self.clone()))
-        }
-    }
-
-    // to-do: make 4d direction vec
-    pub fn vec_from_origin(&self) -> Option<na::Vector3<f32>> {
-        self.center.map(|c| na::Vector3::new(c.x, c.y, c.z))
     }
 
     pub fn set_position(&mut self, pos: Transform) {
@@ -166,7 +136,6 @@ pub fn triangle() -> Geometry {
     triangle.vertices.push(Vertex::new(0, Color::Red));
     triangle.vertices.push(Vertex::new(1, Color::Blue));
     triangle.vertices.push(Vertex::new(2, Color::Green));
-    triangle.center().unwrap();
     triangle
 }
 
