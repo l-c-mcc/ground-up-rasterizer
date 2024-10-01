@@ -8,7 +8,7 @@ mod rasterizer;
 mod timer;
 mod world;
 
-use std::f32::consts::PI;
+use std::{f32::consts::PI, vec};
 
 use color::{Color, Rgba};
 use geometry::{direction, triangle, GeoError};
@@ -42,15 +42,16 @@ fn main() {
         let to_render = camera.world_view(&world, width as f32, height as f32);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
-        draw_buffer.append(&mut rasterize_geometry(&to_render).unwrap_or_else(|error| {
-            match error {
-                GeoError::NotDiv3(geo) => eprintln!(
-                    "The number of vertices of the following triangle is not divisible by 3: {:?}",
-                    geo
-                ),
-            };
-            vec![]
-        }));
+        for obj in &to_render {
+            draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else( |error| {
+                match error {
+                    GeoError::NotDiv3(_) => eprintln!(
+                        "The number of vertices of a triangle is not divisible by 3",
+                    ),
+                };
+                vec![]
+            }));
+        }
         for obj in draw_buffer {
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
                 buffer[index] = u32::from(&obj.color);

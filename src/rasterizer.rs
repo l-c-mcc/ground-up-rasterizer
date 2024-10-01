@@ -24,44 +24,42 @@ impl ToDraw {
 
 // to-do: handle depth
 // to-do: switch geomoetry from vec to one obj
-pub fn rasterize_geometry(geometry: &Vec<Geometry>) -> Result<Vec<ToDraw>, GeoError> {
+pub fn rasterize_geometry(geometry: &Geometry) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];
-    for obj in geometry {
-        match obj.geo_type {
-            GeometryType::Line => {
-                let len = geometry.len();
-                for i in 0..len {
-                    let v1 = &obj.vertices[i];
-                    let v2 = &obj.vertices[i + 1];
-                    draw_buffer.append(&mut draw_line(
-                        &obj.vertex_locations[v1.index],
-                        &obj.vertex_locations[v2.index],
-                        &(&v1.color).into(),
-                        &(&v2.color).into(),
-                    ));
-                }
+    match geometry.geo_type {
+        GeometryType::Line => {
+            let len = geometry.vertices.len();
+            for i in 0..len - 1 {
+                let v1 = &geometry.vertices[i];
+                let v2 = &geometry.vertices[i + 1];
+                draw_buffer.append(&mut draw_line(
+                    &geometry.vertex_locations[v1.index],
+                    &geometry.vertex_locations[v2.index],
+                    &(&v1.color).into(),
+                    &(&v2.color).into(),
+                ));
             }
-            GeometryType::Triangle => {
-                let len = obj.vertices.len();
-                if len % 3 != 0 {
-                    return Err(GeoError::NotDiv3(obj));
-                }
-                let mut i = 0;
-                while i < len {
-                    // move this inside Geometry struct?
-                    let v1 = &obj.vertices[i];
-                    let v2 = &obj.vertices[i + 1];
-                    let v3 = &obj.vertices[i + 2];
-                    draw_buffer.append(&mut rasterize_triangle(
-                        &obj.vertex_locations[v1.index],
-                        &obj.vertex_locations[v2.index],
-                        &obj.vertex_locations[v3.index],
-                        &(&v1.color).into(),
-                        &(&v2.color).into(),
-                        &(&v3.color).into(),
-                    ));
-                    i += 3;
-                }
+        }
+        GeometryType::Triangle => {
+            let len = geometry.vertices.len();
+            if len % 3 != 0 {
+                return Err(GeoError::NotDiv3(geometry));
+            }
+            let mut i = 0;
+            while i < len {
+                // move this inside Geometry struct?
+                let v1 = &geometry.vertices[i];
+                let v2 = &geometry.vertices[i + 1];
+                let v3 = &geometry.vertices[i + 2];
+                draw_buffer.append(&mut rasterize_triangle(
+                    &geometry.vertex_locations[v1.index],
+                    &geometry.vertex_locations[v2.index],
+                    &geometry.vertex_locations[v3.index],
+                    &(&v1.color).into(),
+                    &(&v2.color).into(),
+                    &(&v3.color).into(),
+                ));
+                i += 3;
             }
         }
     }
