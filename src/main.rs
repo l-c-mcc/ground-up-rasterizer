@@ -8,9 +8,11 @@ mod rasterizer;
 mod timer;
 mod world;
 
+use std::f32::consts::PI;
+
 use color::{Color, Rgba};
 use geometry::{triangle, GeoError};
-use math::f32_equals;
+use math::{f32_equals, z_rotation_matrix};
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
 use rasterizer::rasterize_geometry;
@@ -24,24 +26,12 @@ fn main() {
     let height = 1000;
     let mut world = World::default();
     let mut camera = Camera::new(width as f32, height as f32);
-    let t1 = triangle();
-    let mut t2 = triangle();
-    let mut t3 = triangle();
-    t2.transform(math::translation_matrix(na::Vector3::new(
-        (width + 10) as f32,
-        0.0,
-        0.0,
-    )));
-    t3.transform(math::translation_matrix(na::Vector3::new(
-        (width / 2) as f32,
-        0.0,
-        0.0,
-    )));
-    world.insert(t1);
-    world.insert(t2);
-    world.insert(t3);
-
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
+    let mut t = triangle();
+    t.scale(math::scale_matrix(na::matrix![100.0; -100.0; 100.0]));
+    t.rotation(None, None, Some(z_rotation_matrix(PI / 2.0)));
+    t.translate(math::translation_matrix(na::matrix![500.0; 500.0; 0.0]));
+    world.insert(t);
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();

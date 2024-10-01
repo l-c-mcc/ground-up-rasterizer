@@ -9,13 +9,18 @@ pub enum GeoError {
 
 pub type Point = na::Vector4<f32>;
 pub type Direction = na::Vector4<f32>;
+pub type Transform = na::Matrix4<f32>;
 
+// assumption: in local space, center = (0,0)
 #[derive(Debug, Clone)]
 pub struct Geometry {
     pub vertices: Vec<Vertex>,
     pub vertex_locations: Vec<Point>,
     pub geo_type: GeometryType,
-    center: Option<Point>,
+    translation: Transform,
+    rotation: Transform,
+    scale: Transform,
+    center: Option<Point>, // to-do: may be deprecated
 }
 
 #[derive(Debug, Clone)]
@@ -36,11 +41,14 @@ impl Geometry {
             vertices: vec![],
             vertex_locations: vec![],
             geo_type,
+            translation: na::Matrix4::identity(),
+            scale: na::Matrix4::identity(),
+            rotation: na::Matrix4::identity(),
             center: None,
         }
     }
 
-    pub fn transform(&mut self, matrix: na::Matrix4<f32>) {
+    pub fn transform(&mut self, matrix: Transform) {
         for vertex in &mut self.vertex_locations {
             *vertex = matrix * *vertex;
         }
@@ -72,6 +80,41 @@ impl Geometry {
     // to-do: make 4d direction vec
     pub fn vec_from_origin(&self) -> Option<na::Vector3<f32>> {
         self.center.map(|c| na::Vector3::new(c.x, c.y, c.z))
+    }
+
+    pub fn set_position(&mut self, pos: Transform) {
+        self.translation = pos;
+    }
+
+    pub fn translate(&mut self, translation: Transform) {
+        self.translation *= translation;
+    }
+
+    pub fn rotation(
+        &mut self,
+        x_rotation: Option<Transform>,
+        y_rotation: Option<Transform>,
+        z_rotation: Option<Transform>,
+    ) {
+        let mut rotation = na::Matrix4::<f32>::identity();
+        let rotations = [x_rotation, y_rotation, z_rotation];
+        for r in rotations {
+            if let Some(cur_rotation) = r {
+                rotation *= cur_rotation;
+            }
+        }
+        self.rotation = rotation;
+    }
+
+    pub fn scale(&mut self, scale: Transform) {
+        self.scale = scale;
+    }
+
+    pub fn local_to_world(&self) -> Self {
+        let transformation_matrix = self.translation * self.rotation * self.scale;
+        let mut copy = self.clone();
+        copy.transform(transformation_matrix);
+        return copy;
     }
 
     pub fn camera_to_screen(
@@ -117,9 +160,9 @@ pub fn line(t: f32) -> Geometry {
 
 pub fn triangle() -> Geometry {
     let mut triangle = Geometry::new(GeometryType::Triangle);
-    triangle.vertex_locations.push(point(450.0, 400.0, 0.0));
-    triangle.vertex_locations.push(point(600.0, 600.0, 0.0));
-    triangle.vertex_locations.push(point(300.0, 600.0, 0.0));
+    triangle.vertex_locations.push(point(-1.0, -1.0, 0.0));
+    triangle.vertex_locations.push(point(0.0, 1.0, 0.0));
+    triangle.vertex_locations.push(point(1.0, -1.0, 0.0));
     triangle.vertices.push(Vertex::new(0, Color::Red));
     triangle.vertices.push(Vertex::new(1, Color::Blue));
     triangle.vertices.push(Vertex::new(2, Color::Green));

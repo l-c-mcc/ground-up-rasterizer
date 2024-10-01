@@ -55,8 +55,8 @@ impl Camera {
         let mut in_view: Vec<Geometry> = world
             .objects
             .iter()
+            .map(|x| x.local_to_world())
             .filter(|x| self.obj_view(x))
-            .map(|x| (*x).clone())
             .collect();
         let translation = translation_matrix(na::Vector3::new(-self.x, -self.y, 0.0));
         for obj in &mut in_view {
