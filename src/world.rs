@@ -50,11 +50,12 @@ impl Camera {
         world: &World,
         target_width: f32,
         target_height: f32,
+        time: f32,
     ) -> Vec<Geometry> {
         let mut in_view: Vec<Geometry> = world
             .objects
             .iter()
-            .map(|x| x.local_to_world())
+            .map(|x| x.local_to_world(time))
             .filter(|x| self.obj_view(x))
             .collect();
         let translation = translation_matrix(direction(-self.x, -self.y, 0.0));

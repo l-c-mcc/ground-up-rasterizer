@@ -11,7 +11,7 @@ mod world;
 use std::{f32::consts::PI, vec};
 
 use color::{Color, Rgba};
-use geometry::{direction, triangle, GeoError};
+use geometry::{direction, point, triangle, GeoError, Geometry};
 use math::f32_equals;
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
@@ -28,26 +28,35 @@ fn main() {
     let mut camera = Camera::new(width as f32, height as f32);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     let mut t = triangle();
-    t.scale(na::matrix![100.0; -100.0; 100.0]);
+    t.scale(na::matrix![50.0; -50.0; 0.0]);
     t.rotation(0.0, 0.0, PI / 2.0);
     t.translate(direction(500.0, 500.0, 0.0));
+    t.set_animation(|geo: &mut Geometry, time: f32| {
+        geo.rotation(0.0, 0.0, time * 2.0);
+        let scale = 100.0 * time.sin();
+        geo.scale(na::matrix![scale; scale; 0.0]);
+        let pos_x = 300.0 * time.cos();
+        let pos_y = 300.0 * time.sin();
+        geo.set_position(point(pos_x, pos_y, 0.0));
+    });
     world.insert(t);
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();
+        let current_time = timer.time_elapsed_secs();
         let (x, y) = move_camera(&window);
         let x = x * delta_time;
         let y = y * delta_time;
         camera.translate(x, y);
-        let to_render = camera.world_view(&world, width as f32, height as f32);
+        let to_render = camera.world_view(&world, width as f32, height as f32, current_time);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
         let mut draw_buffer = vec![];
         for obj in &to_render {
-            draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else( |error| {
+            draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else(|error| {
                 match error {
-                    GeoError::NotDiv3(_) => eprintln!(
-                        "The number of vertices of a triangle is not divisible by 3",
-                    ),
+                    GeoError::NotDiv3(_) => {
+                        eprintln!("The number of vertices of a triangle is not divisible by 3",)
+                    }
                 };
                 vec![]
             }));

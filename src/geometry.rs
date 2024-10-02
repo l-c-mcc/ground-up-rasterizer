@@ -10,6 +10,7 @@ pub enum GeoError<'a> {
 pub type Point = na::Vector4<f32>;
 pub type Direction = na::Vector4<f32>;
 pub type Transform = na::Matrix4<f32>;
+pub type Animation = fn(&mut Geometry, secs: f32);
 
 // assumption: in local space, center = (0,0)
 #[derive(Debug, Clone)]
@@ -20,6 +21,7 @@ pub struct Geometry {
     translation: Transform,
     rotation: Transform,
     scale: Transform,
+    animation: Option<Animation>,
 }
 
 #[derive(Debug, Clone)]
@@ -43,12 +45,23 @@ impl Geometry {
             translation: na::Matrix4::identity(),
             scale: na::Matrix4::identity(),
             rotation: na::Matrix4::identity(),
+            animation: None,
         }
     }
 
     pub fn transform(&mut self, matrix: Transform) {
         for vertex in &mut self.vertex_locations {
             *vertex = matrix * *vertex;
+        }
+    }
+
+    pub fn set_animation(&mut self, animation: Animation) {
+        self.animation = Some(animation);
+    }
+
+    pub fn animate(&mut self, time: f32) {
+        if let Some(animation) = self.animation {
+            animation(self, time);
         }
     }
 
@@ -77,9 +90,10 @@ impl Geometry {
         self.scale = math::scale_matrix(scale);
     }
 
-    pub fn local_to_world(&self) -> Self {
-        let transformation_matrix = self.translation * self.rotation * self.scale;
+    pub fn local_to_world(&self, time: f32) -> Self {
         let mut copy = self.clone();
+        copy.animate(time);
+        let transformation_matrix = copy.translation * copy.rotation * copy.scale;
         copy.transform(transformation_matrix);
         copy
     }
