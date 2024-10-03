@@ -30,7 +30,7 @@ pub struct Vertex {
     pub color: Color,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GeometryType {
     Triangle,
     Line,
@@ -144,6 +144,17 @@ pub fn triangle() -> Geometry {
     triangle.vertex_locations.push(point(-1.0, -1.0, 0.0));
     triangle.vertex_locations.push(point(0.0, 1.0, 0.0));
     triangle.vertex_locations.push(point(1.0, -1.0, 0.0));
+    triangle.vertices.push(Vertex::new(0, Color::Red));
+    triangle.vertices.push(Vertex::new(1, Color::Blue));
+    triangle.vertices.push(Vertex::new(2, Color::Green));
+    triangle
+}
+
+pub fn right_triangle() -> Geometry {
+    let mut triangle = Geometry::new(GeometryType::Triangle);
+    triangle.vertex_locations.push(point(0.0, -1.0, 0.0));
+    triangle.vertex_locations.push(point(0.0, 1.0, 0.0));
+    triangle.vertex_locations.push(point(1.0, 1.0, 0.0));
     triangle.vertices.push(Vertex::new(0, Color::Red));
     triangle.vertices.push(Vertex::new(1, Color::Blue));
     triangle.vertices.push(Vertex::new(2, Color::Green));
