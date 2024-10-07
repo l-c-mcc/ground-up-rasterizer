@@ -1,5 +1,5 @@
 use crate::geometry::{direction, point, Geometry, GeometryType, Point};
-use crate::math::{translation_matrix, z_rotation_matrix};
+use crate::math::{self, translation_matrix, z_rotation_matrix};
 
 #[derive(Default)]
 pub struct World {
@@ -43,8 +43,10 @@ impl Camera {
     }
 
     pub fn translate(&mut self, x: f32, y: f32) {
-        self.x += x;
-        self.y += y;
+        let rotation_matrix = math::z_rotation_matrix(self.angle);
+        let change = rotation_matrix * direction(x, y, 0.0);
+        self.x += change.x;
+        self.y += change.y;
     }
 
     pub fn world_view(

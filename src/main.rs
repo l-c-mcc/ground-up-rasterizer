@@ -28,7 +28,7 @@ fn main() {
     let mut camera = Camera::new(width as f32, height as f32, PI);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     let mut t = triangle();
-    t.scale(na::matrix![50.0; -50.0; 0.0]);
+    t.scale(na::matrix![200.0; -200.0; 0.0]);
     t.rotation(0.0, 0.0, PI / 2.0);
     t.translate(direction(500.0, 500.0, 0.0));
     // t.set_animation(|geo: &mut Geometry, time: f32| {
