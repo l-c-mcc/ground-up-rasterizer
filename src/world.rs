@@ -1,5 +1,5 @@
 use crate::geometry::{direction, point, Geometry, GeometryType, Point};
-use crate::math::translation_matrix;
+use crate::math::{translation_matrix, z_rotation_matrix};
 
 #[derive(Default)]
 pub struct World {
@@ -11,6 +11,7 @@ pub struct Camera {
     y: f32,
     height: f32,
     width: f32,
+    angle: f32,
 }
 
 impl World {
@@ -20,7 +21,7 @@ impl World {
 }
 
 impl Camera {
-    pub fn new(width: f32, height: f32) -> Self {
+    pub fn new(width: f32, height: f32, angle: f32) -> Self {
         // to-do: rethink this
         //assert!(width >= 1.0 && height >= 1.0);
         Self {
@@ -28,6 +29,7 @@ impl Camera {
             y: 0.0,
             height,
             width,
+            angle,
         }
     }
 
@@ -58,9 +60,19 @@ impl Camera {
             .map(|x| x.local_to_world(time))
             .filter(|x| self.obj_view(x))
             .collect();
-        let translation = translation_matrix(direction(-self.x, -self.y, 0.0));
+        let direction_to_center = direction(
+            -(self.x + (self.width / 2.0)),
+            -(self.y + (self.height / 2.0)),
+            0.0,
+        );
+        let cam_center_translation = translation_matrix(direction_to_center);
+        let rotation = z_rotation_matrix(self.angle);
+        let undo_cam_center_translation = translation_matrix(-direction_to_center);
+        let translation_to_center = translation_matrix(direction(-self.x, -self.y, 0.0));
+        let final_transform =
+            translation_to_center * undo_cam_center_translation * rotation * cam_center_translation;
         for obj in &mut in_view {
-            obj.transform(translation);
+            obj.transform(final_transform);
             // to-do: update in 3d
             obj.camera_to_screen(self.width, self.height, target_width, target_height);
         }

@@ -1,5 +1,5 @@
 // Remove once in 3D?
-#![allow(dead_code)]
+#![allow(dead_code, unused_imports)]
 
 mod color;
 mod geometry;
@@ -8,8 +8,10 @@ mod rasterizer;
 mod timer;
 mod world;
 
+use std::f32::consts::PI;
+
 use color::{Color, Rgba};
-use geometry::{right_triangle, GeoError};
+use geometry::{direction, point, right_triangle, triangle, GeoError, Geometry};
 use math::f32_equals;
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
@@ -23,26 +25,21 @@ fn main() {
     let width = 1000;
     let height = 1000;
     let mut world = World::default();
-    let mut camera = Camera::new(width as f32, height as f32);
+    let mut camera = Camera::new(width as f32, height as f32, PI);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
-    let mut sample_triange = right_triangle();
-    sample_triange.scale(na::matrix![1500.0;1000.0;0.0]);
-    world.insert(sample_triange);
-    /*
     let mut t = triangle();
     t.scale(na::matrix![50.0; -50.0; 0.0]);
     t.rotation(0.0, 0.0, PI / 2.0);
     t.translate(direction(500.0, 500.0, 0.0));
-    t.set_animation(|geo: &mut Geometry, time: f32| {
-        geo.rotation(0.0, 0.0, time * 2.0);
-        let scale = 100.0 * time.sin();
-        geo.scale(na::matrix![scale; scale; 0.0]);
-        let pos_x = 300.0 * time.cos();
-        let pos_y = 300.0 * time.sin();
-        geo.set_position(point(pos_x, pos_y, 0.0));
-    });
+    // t.set_animation(|geo: &mut Geometry, time: f32| {
+    //     geo.rotation(0.0, 0.0, time * 2.0);
+    //     let scale = 100.0 * time.sin();
+    //     geo.scale(na::matrix![scale; scale; 0.0]);
+    //     let pos_x = 300.0 * time.cos();
+    //     let pos_y = 300.0 * time.sin();
+    //     geo.set_position(point(pos_x, pos_y, 0.0));
+    // });
     world.insert(t);
-    */
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();
