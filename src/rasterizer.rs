@@ -8,16 +8,16 @@ pub struct ToDraw {
     pub x: i32,
     pub y: i32,
     pub color: Rgba,
-    _depth: OrdFloat,
+    pub depth: OrdFloat,
 }
 
 impl ToDraw {
-    fn new(x: i32, y: i32, color: Rgba) -> Self {
+    fn new(x: i32, y: i32, color: Rgba, depth: f32) -> Self {
         Self {
             x,
             y,
             color,
-            _depth: OrdFloat(0.0),
+            depth: OrdFloat(depth),
         }
     }
 }
@@ -74,10 +74,12 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
     // Prepare vars
     let mut v1c = v1c;
     let mut v2c = v2c;
-    let mut x0 = v1[0];
-    let mut y0 = v1[1];
-    let mut x1 = v2[0];
-    let mut y1 = v2[1];
+    let mut x0 = v1.x;
+    let mut y0 = v1.y;
+    let mut z0 = v1.z;
+    let mut x1 = v2.x;
+    let mut y1 = v2.y;
+    let mut z1 = v2.z;
     let mut y_diff = y1 - y0;
     let mut x_diff = x1 - x0;
     // Get the line to the point where it has a slope between [0,1]
@@ -94,13 +96,15 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
         swap(&mut x0, &mut x1);
         swap(&mut y0, &mut y1);
         swap(&mut v1c, &mut v2c);
+        swap(&mut z0, &mut z1);
         x_diff *= -1.0;
         y_diff *= -1.0;
     }
-    // Set up color eq.
+    // Set up color and depth eq.
     let rgba_diff = v2c - v1c;
-    let calc_rgba = |x: i32, channel0: OrdFloat, channel_diff: OrdFloat| {
-        (channel0 + channel_diff * OrdFloat((x as f32 - x0) / x_diff)).0
+    let depth_diff = OrdFloat(z1 - z0);
+    let linear_interp = |x: i32, initial: OrdFloat, final_minus_initial: OrdFloat| {
+        (initial + final_minus_initial * OrdFloat((x as f32 - x0) / x_diff)).0
     };
     // update floats to ints
     let mut y_diff = y_diff as i32;
@@ -119,17 +123,18 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
     let x0 = x0.round() as i32;
     let y0 = y0.round() as i32;
     if xy_flipped {
-        draw_buffer.push(ToDraw::new(y0, x0, v1c.clone()));
+        draw_buffer.push(ToDraw::new(y0, x0, v1c.clone(), z0));
     } else {
-        draw_buffer.push(ToDraw::new(x0, y0, v1c.clone()));
+        draw_buffer.push(ToDraw::new(x0, y0, v1c.clone(), z0));
     }
     for x in (x0 + 1)..=(x1.round() as i32) {
         let color = Rgba::color_a(
-            calc_rgba(x, v1c.r, rgba_diff.r),
-            calc_rgba(x, v1c.g, rgba_diff.g),
-            calc_rgba(x, v1c.b, rgba_diff.b),
-            calc_rgba(x, v1c.a, rgba_diff.a),
+            linear_interp(x, v1c.r, rgba_diff.r),
+            linear_interp(x, v1c.g, rgba_diff.g),
+            linear_interp(x, v1c.b, rgba_diff.b),
+            linear_interp(x, v1c.a, rgba_diff.a),
         );
+        let depth = linear_interp(x, OrdFloat(z0), depth_diff);
         if d >= 0 {
             d += d_incr_gte_0;
         } else {
@@ -137,9 +142,9 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
             d += d_incr_lt_0;
         }
         if xy_flipped {
-            draw_buffer.push(ToDraw::new(y, x, color));
+            draw_buffer.push(ToDraw::new(y, x, color, depth));
         } else {
-            draw_buffer.push(ToDraw::new(x, y, color));
+            draw_buffer.push(ToDraw::new(x, y, color, depth));
         }
     }
     draw_buffer
@@ -184,6 +189,7 @@ fn rasterize_triangle(
                     x as i32,
                     y as i32,
                     &(&(a * v1c) + &(b * v2c)) + &(l * v3c),
+                    (a * v1.z) + (b * v2.z) + (l * v3.z),
                 ));
             }
         }
@@ -204,19 +210,18 @@ mod tests {
         let x = 1;
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
-        let target = vec![ToDraw::new(x, y, c.clone())];
-        let vertex1 = point(x as f32, y as f32, 0.0);
-        let vertex2 = vertex1;
-        assert_eq!(draw_line(&vertex1, &vertex2, &c, &c), target);
+        let target = vec![ToDraw::new(x, y, c.clone(), 0.0)];
+        let vertex = point(x as f32, y as f32, 0.0);
+        assert_eq!(draw_line(&vertex, &vertex, &c, &c), target);
     }
 
-    // to-do: handle depth when in 3d
+    // to-do: handle depth when in 3d (another test?)
     #[test]
     fn test_line() {
         let x = 1;
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
-        let origin = ToDraw::new(x, y, c.clone());
+        let origin = ToDraw::new(x, y, c.clone(), 0.0);
         let vertex1: Point = point(x as f32, y as f32, 0.0);
         for x in (-1..=1).map(|x| x as f32) {
             for y in (-1..=1).map(|y| y as f32) {
@@ -227,8 +232,12 @@ mod tests {
                 vertex2.x += x;
                 vertex2.y += y;
                 let line = draw_line(&vertex1, &vertex2, &c, &c);
-                let target_point =
-                    ToDraw::new((vertex1.x + x) as i32, (vertex1.y + y) as i32, c.clone());
+                let target_point = ToDraw::new(
+                    (vertex1.x + x) as i32,
+                    (vertex1.y + y) as i32,
+                    c.clone(),
+                    0.0,
+                );
                 let mut target_line = BTreeSet::new();
                 assert!(target_line.insert(&origin));
                 assert!(target_line.insert(&target_point));
@@ -246,8 +255,8 @@ mod tests {
         let y1: f32 = 2.3;
         let c: Rgba = (&Color::Red).into();
         let target_line = vec![
-            ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone()),
-            ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone()),
+            ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone(), 0.0),
+            ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone(), 0.0),
         ];
         let computed_line = draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c);
         assert_eq!(
@@ -264,16 +273,22 @@ mod tests {
         let v3 = point(1.0, 1.0, 0.0);
         let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
         let target_triangle = vec![
-            ToDraw::new(v1.x as i32, v1.y as i32, color.clone()),
-            ToDraw::new(v2.x as i32, v2.y as i32, color.clone()),
-            ToDraw::new(v3.x as i32, v3.y as i32, color.clone()),
-            ToDraw::new((v1.x as i32 + v2.x as i32) / 2, v1.y as i32, color.clone()),
+            ToDraw::new(v1.x as i32, v1.y as i32, color.clone(), 0.0),
+            ToDraw::new(v2.x as i32, v2.y as i32, color.clone(), 0.0),
+            ToDraw::new(v3.x as i32, v3.y as i32, color.clone(), 0.0),
+            ToDraw::new(
+                (v1.x as i32 + v2.x as i32) / 2,
+                v1.y as i32,
+                color.clone(),
+                0.0,
+            ),
         ];
         assert_eq!(
             BTreeSet::from_iter(target_triangle.into_iter()),
             BTreeSet::from_iter(computed_triangle.into_iter())
         );
     }
+
     #[test]
     fn test_triangle_fp() {
         let color: Rgba = (&Color::Red).into();
@@ -282,13 +297,14 @@ mod tests {
         let v3 = point(1.1, 0.9, 0.0);
         let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
         let target_triangle = vec![
-            ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone()),
-            ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone()),
-            ToDraw::new(v3.x.round() as i32, v3.y.round() as i32, color.clone()),
+            ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone(), 0.0),
+            ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone(), 0.0),
+            ToDraw::new(v3.x.round() as i32, v3.y.round() as i32, color.clone(), 0.0),
             ToDraw::new(
                 (v1.x.round() as i32 + v2.x.round() as i32) / 2,
                 v1.y.round() as i32,
                 color.clone(),
+                0.0,
             ),
         ];
         assert_eq!(

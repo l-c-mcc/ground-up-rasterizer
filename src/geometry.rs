@@ -128,12 +128,10 @@ pub fn direction(x: f32, y: f32, z: f32) -> Direction {
     na::Vector4::new(x, y, z, 0.0)
 }
 
-pub fn line(t: f32) -> Geometry {
+pub fn line() -> Geometry {
     let mut line = Geometry::new(GeometryType::Line);
-    let x = (300.0 * t.cos()) + 500.0;
-    let y = (300.0 * t.sin()) + 500.0;
-    line.vertex_locations.push(point(500.0, 500.0, 0.0));
-    line.vertex_locations.push(point(x, y, 0.0));
+    line.vertex_locations.push(point(0.0, 0.0, 0.0));
+    line.vertex_locations.push(point(1.0, 0.0, 1.0));
     line.vertices.push(Vertex::new(0, Color::Red));
     line.vertices.push(Vertex::new(1, Color::Blue));
     line
