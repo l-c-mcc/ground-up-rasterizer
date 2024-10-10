@@ -11,7 +11,7 @@ mod world;
 use std::f32::consts::PI;
 
 use color::{Color, Rgba};
-use geometry::{direction, point, right_triangle, triangle, GeoError, Geometry};
+use geometry::{direction, point, right_triangle, triangle, GeoError, Geometry, square};
 use math::f32_equals;
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
@@ -22,15 +22,18 @@ use world::{Camera, World};
 fn main() {
     let mut timer = Timer::default();
 
-    let width = 1000;
+    let width = 1500;
     let height = 1000;
     let mut world = World::default();
-    let mut camera = Camera::new(width as f32, height as f32, PI);
+    let mut camera = Camera::new(width as f32, height as f32, 0.0);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
+    let mut s = square();
+    s.scale(na::matrix![200.0;200.0;200.0]);
+    s.translate(direction(500.0, 500.0, 0.0));
     let mut t = triangle();
     t.scale(na::matrix![200.0; -200.0; 0.0]);
-    t.rotation(0.0, 0.0, PI / 2.0);
-    t.translate(direction(500.0, 500.0, 0.0));
+    t.rotation(0.0, 0.0, PI);
+    t.translate(direction(500.0, -200.0, 0.0));
     // t.set_animation(|geo: &mut Geometry, time: f32| {
     //     geo.rotation(0.0, 0.0, time * 2.0);
     //     let scale = 100.0 * time.sin();
@@ -40,10 +43,13 @@ fn main() {
     //     geo.set_position(point(pos_x, pos_y, 0.0));
     // });
     world.insert(t);
+    world.insert(s);
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();
         let current_time = timer.time_elapsed_secs();
+        let angle = rotate_camera(&window);
+        camera.add_rotation(angle * delta_time);
         let (x, y) = move_camera(&window);
         let x = x * delta_time;
         let y = y * delta_time;
@@ -93,6 +99,16 @@ fn move_camera(window: &Window) -> (f32, f32) {
         y_vel /= sqrt2;
     }
     (x_vel, y_vel)
+}
+
+fn rotate_camera(window: &Window) -> f32 {
+    use Key::{Q, E};
+    let speed = PI / 15.0;
+    match (window.is_key_down(Q), window.is_key_down(E)) {
+        (true, false) => -speed,
+        (false, true) => speed,
+        _ => 0.0,
+    }
 }
 
 fn xy_to_1d(x: i32, y: i32, width: i32, height: i32) -> Option<usize> {

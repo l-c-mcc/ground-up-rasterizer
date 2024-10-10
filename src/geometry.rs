@@ -161,12 +161,12 @@ pub fn right_triangle() -> Geometry {
     triangle
 }
 
-pub fn square(scale: f32) -> Geometry {
+pub fn square() -> Geometry {
     let mut square = Geometry::new(GeometryType::Triangle);
-    square.vertex_locations.push(scale * point(0.0, 0.0, 0.0));
-    square.vertex_locations.push(scale * point(1.0, 0.0, 0.0));
-    square.vertex_locations.push(scale * point(0.0, 1.0, 0.0));
-    square.vertex_locations.push(scale * point(1.0, 1.0, 0.0));
+    square.vertex_locations.push(point(-1.0, -1.0, 0.0));
+    square.vertex_locations.push(point(-1.0, 1.0, 0.0));
+    square.vertex_locations.push(point(1.0, 1.0, 0.0));
+    square.vertex_locations.push(point(1.0, -1.0, 0.0));
     square.vertices.push(Vertex::new(0, Color::Blue));
     square.vertices.push(Vertex::new(1, Color::White));
     square.vertices.push(Vertex::new(2, Color::Red));

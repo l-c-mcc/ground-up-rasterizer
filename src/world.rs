@@ -42,8 +42,12 @@ impl Camera {
         self.y = y;
     }
 
+    pub fn add_rotation(&mut self, rotation: f32) {
+        self.angle += rotation;
+    }
+
     pub fn translate(&mut self, x: f32, y: f32) {
-        let rotation_matrix = math::z_rotation_matrix(self.angle);
+        let rotation_matrix = math::z_rotation_matrix(-self.angle);
         let change = rotation_matrix * direction(x, y, 0.0);
         self.x += change.x;
         self.y += change.y;
