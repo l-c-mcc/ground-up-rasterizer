@@ -8,7 +8,7 @@ mod rasterizer;
 mod timer;
 mod world;
 
-use std::f32::{consts::PI, INFINITY};
+use std::f32::consts::PI;
 
 use color::{Color, Rgba};
 use geometry::{direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
@@ -49,13 +49,13 @@ fn main() {
     world.insert(l1);
     world.insert(l2);
     world.insert(l3);
-    // let mut s = square();
-    // s.scale(na::matrix![200.0;200.0;200.0]);
-    // s.translate(direction(500.0, 500.0, 0.0));
-    // let mut t = triangle();
-    // t.scale(na::matrix![200.0; -200.0; 0.0]);
-    // t.rotation(0.0, 0.0, PI);
-    // t.translate(direction(500.0, -200.0, 0.0));
+    let mut s = square();
+    s.scale(na::matrix![200.0;200.0;200.0]);
+    s.translate(direction(500.0, 500.0, 0.0));
+    let mut t = triangle();
+    t.scale(na::matrix![200.0; -200.0; 0.0]);
+    t.rotation(0.0, 0.0, PI);
+    t.translate(direction(500.0, -200.0, 0.0));
     // t.set_animation(|geo: &mut Geometry, time: f32| {
     //     geo.rotation(0.0, 0.0, time * 2.0);
     //     let scale = 100.0 * time.sin();
@@ -64,8 +64,8 @@ fn main() {
     //     let pos_y = 300.0 * time.sin();
     //     geo.set_position(point(pos_x, pos_y, 0.0));
     // });
-    //world.insert(t);
-    //world.insert(s);
+    world.insert(t);
+    world.insert(s);
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();
@@ -78,7 +78,7 @@ fn main() {
         camera.translate(x, y);
         let to_render = camera.world_view(&world, width as f32, height as f32, current_time);
         let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
-        let mut depth = vec![OrdFloat(-INFINITY); width * height];
+        let mut depth = vec![OrdFloat(-f32::INFINITY); width * height];
         let mut draw_buffer = vec![];
         for obj in &to_render {
             draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else(|error| {

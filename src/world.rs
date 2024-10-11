@@ -60,12 +60,6 @@ impl Camera {
         target_height: f32,
         time: f32,
     ) -> Vec<Geometry> {
-        let mut in_view: Vec<Geometry> = world
-            .objects
-            .iter()
-            .map(|x| x.local_to_world(time))
-            .filter(|x| self.obj_view(x))
-            .collect();
         let direction_to_center = direction(
             -(self.x + (self.width / 2.0)),
             -(self.y + (self.height / 2.0)),
@@ -77,8 +71,13 @@ impl Camera {
         let translation_to_center = translation_matrix(direction(-self.x, -self.y, 0.0));
         let final_transform =
             translation_to_center * undo_cam_center_translation * rotation * cam_center_translation;
+        let mut in_view: Vec<Geometry> = world
+            .objects
+            .iter()
+            .map(|x| x.local_to_world(time, final_transform))
+            .filter(|x| self.obj_view(x))
+            .collect();
         for obj in &mut in_view {
-            obj.transform(final_transform);
             // to-do: update in 3d
             obj.camera_to_screen(self.width, self.height, target_width, target_height);
         }
@@ -99,8 +98,8 @@ impl Camera {
                 break;
             }
             let j = if i == vertex_count - 1 { 0 } else { i + 1 };
-            let vertex1 = obj.vertex_locations[i];
-            let vertex2 = obj.vertex_locations[j];
+            let vertex1 = obj.vertex_locations[obj.vertices[i].index];
+            let vertex2 = obj.vertex_locations[obj.vertices[j].index];
             let slope = (vertex2.y - vertex1.y) / (vertex2.x - vertex1.x);
             // line is horizontal
             if slope == 0.0 {

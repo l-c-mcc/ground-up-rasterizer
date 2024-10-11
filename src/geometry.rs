@@ -90,10 +90,10 @@ impl Geometry {
         self.scale = math::scale_matrix(scale);
     }
 
-    pub fn local_to_world(&self, time: f32) -> Self {
+    pub fn local_to_world(&self, time: f32, cam_rotation: Transform) -> Self {
         let mut copy = self.clone();
         copy.animate(time);
-        let transformation_matrix = copy.translation * copy.rotation * copy.scale;
+        let transformation_matrix = cam_rotation * copy.translation * copy.rotation * copy.scale;
         copy.transform(transformation_matrix);
         copy
     }

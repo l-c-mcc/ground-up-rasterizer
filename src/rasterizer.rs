@@ -22,8 +22,6 @@ impl ToDraw {
     }
 }
 
-// to-do: handle depth
-// to-do: switch geomoetry from vec to one obj
 pub fn rasterize_geometry(geometry: &Geometry) -> Result<Vec<ToDraw>, GeoError> {
     let mut draw_buffer = vec![];
     match geometry.geo_type {
