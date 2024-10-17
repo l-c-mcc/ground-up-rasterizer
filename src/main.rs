@@ -27,14 +27,20 @@ fn main() {
     let mut world = World::default();
     let mut camera = Camera::new(width as f32, height as f32, 0.0);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
-    // Triangle depth testing
+    // Triangle depth and alpha testing
     let mut t1 = triangle();
     t1.scale(na::matrix![200.0;200.0;0.0]);
     let mut t2 = t1.clone();
+    let mut t3 = t2.clone();
     t1.translate(direction(0.0, 0.0, 0.0));
     t2.translate(direction(50.0, 50.0, 1.0));
+    t3.translate(direction(100.0, 100.0, 2.0));
+    t1.set_color(Color::Red);
+    t2.set_color(Color::Custom(0.0, 0.0, 1.0, 0.5));
+    t3.set_color(Color::Custom(0.0, 1.0, 0.0, 0.45));
     world.insert(t1);
     world.insert(t2);
+    world.insert(t3);
     // Line depth testing
     let mut l1 = line();
     l1.scale(na::matrix![200.0;200.0;1.0]);
@@ -77,7 +83,7 @@ fn main() {
         let y = y * delta_time;
         camera.translate(x, y);
         let to_render = camera.world_view(&world, width as f32, height as f32, current_time);
-        let mut buffer = vec![u32::from(&Rgba::from(&Color::Black)); width * height];
+        let mut buffer = vec![Rgba::from(&Color::Black); width * height];
         let mut depth = vec![OrdFloat(-f32::INFINITY); width * height];
         let mut draw_buffer = vec![];
         for obj in &to_render {
@@ -90,14 +96,39 @@ fn main() {
                 vec![]
             }));
         }
-        for obj in draw_buffer {
+        // todo: combine map and fold?
+        let (opaque, mut transparent) =
+            draw_buffer
+                .into_iter()
+                .fold((vec![], vec![]), |mut acc, cur| {
+                    if cur.color.a == OrdFloat(1.0) {
+                        acc.0.push(cur);
+                    } else {
+                        acc.1.push(cur);
+                    }
+                    acc
+                });
+        // fill in greatest depth opaque values
+        for obj in opaque {
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
                 if obj.depth > depth[index] {
-                    buffer[index] = u32::from(&obj.color);
+                    buffer[index] = obj.color;
                     depth[index] = obj.depth;
                 }
             }
         }
+        // layer transparent on top of opaque
+        transparent.sort_unstable_by_key(|cur| cur.depth);
+        for obj in transparent {
+            if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
+                if obj.depth > depth[index] {
+                    buffer[index].over_blend(obj.color);
+                    // does not need to be updated because sorted; maybe remove?
+                    depth[index] = obj.depth;
+                }
+            }
+        }
+        let buffer: Vec<u32> = buffer.into_iter().map(|cur| u32::from(&cur)).collect();
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
 }

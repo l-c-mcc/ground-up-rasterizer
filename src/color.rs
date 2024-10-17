@@ -1,5 +1,5 @@
 use crate::math::OrdFloat;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -8,7 +8,7 @@ pub enum Color {
     Green,
     Blue,
     White,
-    Custom(f32, f32, f32),
+    Custom(f32, f32, f32, f32),
 }
 
 impl From<&Color> for Rgba {
@@ -19,7 +19,7 @@ impl From<&Color> for Rgba {
             Color::Green => Rgba::color(0.0, 1.0, 0.0),
             Color::Blue => Rgba::color(0.0, 0.0, 1.0),
             Color::White => Rgba::color(1.0, 1.0, 1.0),
-            Color::Custom(r, g, b) => Rgba::color(*r, *g, *b),
+            Color::Custom(r, g, b, a) => Rgba::color_a(*r, *g, *b, *a),
         }
     }
 }
@@ -50,6 +50,19 @@ impl Rgba {
             a: OrdFloat(a),
         }
     }
+
+    // to-do: rethink trait impls
+    //blend on top of self
+    pub fn over_blend(&mut self, mut over: Rgba) {
+        let under_multiplier = OrdFloat(1.0) - over.a;
+        self.r *= under_multiplier;
+        self.g *= under_multiplier;
+        self.b *= under_multiplier;
+        over.r *= over.a;
+        over.g *= over.a;
+        over.b *= over.a;
+        *self += over;
+    }
 }
 
 impl From<&Rgba> for u32 {
@@ -76,6 +89,15 @@ impl Add for &Rgba {
             self.b.0 + rhs.b.0,
             self.a.0 + rhs.a.0,
         )
+    }
+}
+
+impl AddAssign for Rgba {
+    fn add_assign(&mut self, rhs: Self) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
     }
 }
 

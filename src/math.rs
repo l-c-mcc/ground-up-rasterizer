@@ -1,7 +1,7 @@
 use crate::geometry::{Direction, Transform};
 use nalgebra as na;
 use std::cmp;
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct OrdFloat(pub f32);
@@ -13,10 +13,29 @@ impl Add for OrdFloat {
     }
 }
 
+impl AddAssign for OrdFloat {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl Sub for OrdFloat {
+    type Output = OrdFloat;
+    fn sub(self, rhs: Self) -> Self::Output {
+        OrdFloat(self.0 - rhs.0)
+    }
+}
+
 impl Mul for OrdFloat {
     type Output = OrdFloat;
     fn mul(self, rhs: Self) -> Self::Output {
         OrdFloat(self.0 * rhs.0)
+    }
+}
+
+impl MulAssign for OrdFloat {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0 *= rhs.0;
     }
 }
 

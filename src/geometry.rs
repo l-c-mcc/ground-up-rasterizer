@@ -112,6 +112,12 @@ impl Geometry {
             vertex.y = y_ratio * screen_height;
         }
     }
+
+    pub fn set_color(&mut self, color: Color) {
+        for v in &mut self.vertices {
+            v.color = color;
+        }
+    }
 }
 
 impl Vertex {
