@@ -76,6 +76,7 @@ fn main() {
     let mut rgba_buffer = vec![Rgba::from(&Color::Black); width * height];
     let mut depth_buffer = vec![OrdFloat(-f32::INFINITY); width * height];
     let mut draw_buffer = vec![];
+    let mut u32_buffer: Vec<u32> = vec![0; width * height];
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // update timer
         timer.tick();
@@ -137,7 +138,9 @@ fn main() {
                 }
             }
         }
-        let u32_buffer: Vec<u32> = rgba_buffer.iter().map(|cur| u32::from(cur)).collect();
+        for i in 0..(width*height) {
+            u32_buffer[i] = u32::from(&rgba_buffer[i]);
+        }
         window.update_with_buffer(&u32_buffer, width, height).unwrap();
         // reset buffers
         for item in &mut rgba_buffer {
@@ -145,6 +148,9 @@ fn main() {
         }
         for item in &mut depth_buffer {
             *item = OrdFloat(-f32::INFINITY);
+        }
+        for item in &mut u32_buffer {
+            *item = 0;
         }
         draw_buffer.clear();
     }
