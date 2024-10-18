@@ -9,6 +9,7 @@ mod timer;
 mod world;
 
 use std::f32::{consts::PI, INFINITY};
+use std::cell::RefCell;
 
 use color::{Color, Rgba};
 use geometry::{direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
@@ -77,6 +78,8 @@ fn main() {
     let mut depth_buffer = vec![OrdFloat(-f32::INFINITY); width * height];
     let mut draw_buffer = vec![];
     let mut u32_buffer: Vec<u32> = vec![0; width * height];
+    let mut opaque = vec![];
+    let mut transparent = vec![];
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // update timer
         timer.tick();
@@ -100,26 +103,22 @@ fn main() {
             draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else(|error| {
                 match error {
                     GeoError::NotDiv3(_) => {
-                        eprintln!("The number of vertices of a triangle is not divisible by 3",)
+                        eprintln!("The number of vertices of a triangle is not divisible by 3");
                     }
                 };
                 vec![]
             }));
         }
-        // todo: combine map and fold?
-        let (opaque, mut transparent) =
-            draw_buffer
-                .iter()
-                .fold((vec![], vec![]), |mut acc, cur| {
-                    if cur.color.a == OrdFloat(1.0) {
-                        acc.0.push(cur);
-                    } else {
-                        acc.1.push(cur);
-                    }
-                    acc
-                });
-        // fill in greatest depth opaque values
-        for obj in opaque {
+        let db_len = draw_buffer.len();
+        for i in 0..db_len {
+            if draw_buffer[i].color.a == OrdFloat(1.0) {
+                opaque.push(i);
+            } else {
+                transparent.push(i);
+            }
+        }
+        for i in opaque.iter() {
+            let obj = &draw_buffer[*i];
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
                 if obj.depth > depth_buffer[index] {
                     rgba_buffer[index] = obj.color.clone();
@@ -128,8 +127,9 @@ fn main() {
             }
         }
         // layer transparent on top of opaque
-        transparent.sort_unstable_by_key(|cur| cur.depth);
-        for obj in transparent {
+        transparent.sort_unstable_by_key(|cur| draw_buffer[*cur].depth);
+        for i in transparent.iter() {
+            let obj = &draw_buffer[*i];
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
                 if obj.depth > depth_buffer[index] {
                     rgba_buffer[index].over_blend(obj.color.clone());
@@ -152,6 +152,8 @@ fn main() {
         for item in &mut u32_buffer {
             *item = 0;
         }
+        transparent.clear();
+        opaque.clear();
         draw_buffer.clear();
     }
 }
