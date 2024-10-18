@@ -8,7 +8,7 @@ mod rasterizer;
 mod timer;
 mod world;
 
-use std::f32::consts::PI;
+use std::f32::{consts::PI, INFINITY};
 
 use color::{Color, Rgba};
 use geometry::{direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
@@ -72,20 +72,29 @@ fn main() {
     // });
     world.insert(t);
     world.insert(s);
-    while window.is_open() {
+    let mut cur = 0;
+    let mut rgba_buffer = vec![Rgba::from(&Color::Black); width * height];
+    let mut depth_buffer = vec![OrdFloat(-f32::INFINITY); width * height];
+    let mut draw_buffer = vec![];
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        // update timer
         timer.tick();
         let delta_time = timer.delta_time_secs();
         let current_time = timer.time_elapsed_secs();
+        // fps count
+        cur += 1;
+        if cur % 60 == 0 {
+            println!("{} fps; {} delta time", 1.0 / delta_time, delta_time);
+        }
+        // camera movement
         let angle = rotate_camera(&window);
         camera.add_rotation(angle * delta_time);
         let (x, y) = move_camera(&window);
         let x = x * delta_time;
         let y = y * delta_time;
         camera.translate(x, y);
+        // render
         let to_render = camera.world_view(&world, width as f32, height as f32, current_time);
-        let mut buffer = vec![Rgba::from(&Color::Black); width * height];
-        let mut depth = vec![OrdFloat(-f32::INFINITY); width * height];
-        let mut draw_buffer = vec![];
         for obj in &to_render {
             draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else(|error| {
                 match error {
@@ -99,7 +108,7 @@ fn main() {
         // todo: combine map and fold?
         let (opaque, mut transparent) =
             draw_buffer
-                .into_iter()
+                .iter()
                 .fold((vec![], vec![]), |mut acc, cur| {
                     if cur.color.a == OrdFloat(1.0) {
                         acc.0.push(cur);
@@ -111,9 +120,9 @@ fn main() {
         // fill in greatest depth opaque values
         for obj in opaque {
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
-                if obj.depth > depth[index] {
-                    buffer[index] = obj.color;
-                    depth[index] = obj.depth;
+                if obj.depth > depth_buffer[index] {
+                    rgba_buffer[index] = obj.color.clone();
+                    depth_buffer[index] = obj.depth;
                 }
             }
         }
@@ -121,15 +130,23 @@ fn main() {
         transparent.sort_unstable_by_key(|cur| cur.depth);
         for obj in transparent {
             if let Some(index) = xy_to_1d(obj.x, obj.y, width as i32, height as i32) {
-                if obj.depth > depth[index] {
-                    buffer[index].over_blend(obj.color);
+                if obj.depth > depth_buffer[index] {
+                    rgba_buffer[index].over_blend(obj.color.clone());
                     // does not need to be updated because sorted; maybe remove?
-                    depth[index] = obj.depth;
+                    depth_buffer[index] = obj.depth;
                 }
             }
         }
-        let buffer: Vec<u32> = buffer.into_iter().map(|cur| u32::from(&cur)).collect();
-        window.update_with_buffer(&buffer, width, height).unwrap();
+        let u32_buffer: Vec<u32> = rgba_buffer.iter().map(|cur| u32::from(cur)).collect();
+        window.update_with_buffer(&u32_buffer, width, height).unwrap();
+        // reset buffers
+        for item in &mut rgba_buffer {
+            *item = Rgba::color(0.0, 0.0, 0.0);
+        }
+        for item in &mut depth_buffer {
+            *item = OrdFloat(-f32::INFINITY);
+        }
+        draw_buffer.clear();
     }
 }
 

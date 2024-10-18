@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 minifb = "0.27.0"
 nalgebra = "0.33.0"
+
+[profile.release]
+debug = true
