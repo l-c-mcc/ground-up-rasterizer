@@ -193,7 +193,6 @@ fn rasterize_triangle(
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use crate::color::Color;
@@ -208,8 +207,10 @@ mod tests {
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
         let target = vec![ToDraw::new(x, y, c.clone(), 0.0)];
+        let mut calculated = vec![];
         let vertex = point(x as f32, y as f32, 0.0);
-        assert_eq!(draw_line(&vertex, &vertex, &c, &c), target);
+        draw_line(&vertex, &vertex, &c, &c, &mut calculated);
+        assert_eq!(calculated, target);
     }
 
     // to-do: handle depth when in 3d (another test?)
@@ -228,7 +229,8 @@ mod tests {
                 let mut vertex2 = vertex1;
                 vertex2.x += x;
                 vertex2.y += y;
-                let line = draw_line(&vertex1, &vertex2, &c, &c);
+                let mut line = vec![];
+                draw_line(&vertex1, &vertex2, &c, &c, &mut line);
                 let target_point = ToDraw::new(
                     (vertex1.x + x) as i32,
                     (vertex1.y + y) as i32,
@@ -255,7 +257,8 @@ mod tests {
             ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone(), 0.0),
             ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone(), 0.0),
         ];
-        let computed_line = draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c);
+        let mut computed_line = vec![];
+        draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c, &mut computed_line);
         assert_eq!(
             BTreeSet::from_iter(target_line.into_iter()),
             BTreeSet::from_iter(computed_line.into_iter()),
@@ -268,7 +271,8 @@ mod tests {
         let v1 = point(0.0, 0.0, 0.0);
         let v2 = point(2.0, 0.0, 0.0);
         let v3 = point(1.0, 1.0, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let mut computed_triangle = vec![];
+        rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &mut computed_triangle);
         let target_triangle = vec![
             ToDraw::new(v1.x as i32, v1.y as i32, color.clone(), 0.0),
             ToDraw::new(v2.x as i32, v2.y as i32, color.clone(), 0.0),
@@ -292,7 +296,8 @@ mod tests {
         let v1 = point(0.1, 0.2, 0.0);
         let v2 = point(1.8, 0.3, 0.0);
         let v3 = point(1.1, 0.9, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let mut computed_triangle = vec![]; 
+        rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &mut computed_triangle);
         let target_triangle = vec![
             ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone(), 0.0),
             ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone(), 0.0),
@@ -310,5 +315,3 @@ mod tests {
         );
     }
 }
-
-*/
