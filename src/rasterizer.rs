@@ -162,9 +162,27 @@ fn rasterize_triangle(
     let y0 = v1[1].round();
     let y1 = v2[1].round();
     let y2 = v3[1].round();
-    let f12 = |x, y| (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1;
-    let f20 = |x, y| (y2 - y0) * x + (x0 - x2) * y + x2 * y0 - x0 * y2;
-    let f01 = |x, y| (y0 - y1) * x + (x1 - x0) * y + x0 * y1 - x1 * y0;
+    // I would assume the compiler would do these precomputes
+    // for me, but doing them myself seems to lead to gaining
+    // a handful of frames (~3). To-do: investigate further
+    let f12 = {
+        let y1y2 = y1-y2;
+        let x2x1 = x2 - x1;
+        let x1y2x2y1 = x1 * y2 - x2 * y1;
+        move |x, y| y1y2 * x + x2x1 * y + x1y2x2y1
+    };
+    let f20 = { 
+        let y2y0 = y2 - y0;
+        let x0x2 = x0 - x2;
+        let x2y0x0y2 = x2 * y0 - x0 * y2;
+        move |x, y| y2y0 * x + x0x2 * y + x2y0x0y2
+    };
+    let f01 = {
+        let y0y1 = y0 - y1;
+        let x1x0 = x1 - x0;
+        let x0y1x1y0= x0 * y1 - x1 * y0;
+        move |x, y| y0y1 * x + x1x0 * y + x0y1x1y0
+    };
     let alpha_denom = f12(x0, y0);
     let beta_denom = f20(x1, y1);
     let lambda_denom = f01(x2, y2);
@@ -175,7 +193,7 @@ fn rasterize_triangle(
     let x_max = x0.max(x1).max(x2) as usize;
     let y_min = y0.min(y1).min(y2) as usize;
     let y_max = y0.max(y1).max(y2) as usize;
-    let within_bounds = |val| (0.0..=1.0).contains(&val);
+    let within_bounds = |val| val >= 0.0 && val <= 1.0;
     for y in (y_min..=y_max).map(|y| y as f32) {
         for x in (x_min..=x_max).map(|x| x as f32) {
             let a = alpha(x, y);
