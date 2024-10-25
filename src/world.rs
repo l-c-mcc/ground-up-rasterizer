@@ -21,12 +21,12 @@ impl World {
 }
 
 impl Camera {
-    pub fn new(width: f32, height: f32, angle: f32) -> Self {
+    pub fn new(x: f32, y: f32, width: f32, height: f32, angle: f32) -> Self {
         // to-do: rethink this
         //assert!(width >= 1.0 && height >= 1.0);
         Self {
-            x: 0.0,
-            y: 0.0,
+            x,
+            y,
             height,
             width,
             angle,

@@ -26,7 +26,7 @@ fn main() {
     let width = 1500;
     let height = 1000;
     let mut world = World::default();
-    let mut camera = Camera::new(width as f32, height as f32, 0.0);
+    let mut camera = Camera::new(-200., -200., width as f32, height as f32, 0.0);
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     // Triangle depth and alpha testing
     let mut t1 = triangle();
