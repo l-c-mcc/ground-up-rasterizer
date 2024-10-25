@@ -80,6 +80,8 @@ fn main() {
     let mut u32_buffer: Vec<u32> = vec![0; width * height];
     let mut opaque = vec![];
     let mut transparent = vec![];
+    let mut fps_sum = 0.;
+    let mut fps_count = 0.;
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // update timer
         timer.tick();
@@ -88,7 +90,11 @@ fn main() {
         // fps count
         cur += 1;
         if cur % 60 == 0 {
-            println!("{} fps; {} delta time", 1.0 / delta_time, delta_time);
+            let cur_fps = 1.0 / delta_time;
+            fps_sum += cur_fps;
+            fps_count += 1.;
+            println!("{} fps; {} delta time; {} average fps", cur_fps, delta_time, fps_sum /fps_count);
+
         }
         // camera movement
         let angle = rotate_camera(&window);
