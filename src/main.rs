@@ -100,14 +100,13 @@ fn main() {
         // render
         let to_render = camera.world_view(&world, width as f32, height as f32, current_time);
         for obj in &to_render {
-            draw_buffer.append(&mut rasterize_geometry(obj).unwrap_or_else(|error| {
+            rasterize_geometry(obj, &mut draw_buffer).unwrap_or_else(|error| {
                 match error {
                     GeoError::NotDiv3(_) => {
                         eprintln!("The number of vertices of a triangle is not divisible by 3");
                     }
                 };
-                vec![]
-            }));
+            });
         }
         let db_len = draw_buffer.len();
         for i in 0..db_len {
