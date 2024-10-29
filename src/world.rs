@@ -22,12 +22,12 @@ impl World {
 }
 
 impl Camera {
-    pub fn new(width: f32, height: f32, angle: f32) -> Self {
+    pub fn new(x: f32, y: f32, width: f32, height: f32, angle: f32) -> Self {
         // to-do: rethink this
         //assert!(width >= 1.0 && height >= 1.0);
         Self {
-            x: 0.0,
-            y: 0.0,
+            x,
+            y,
             height,
             width,
             angle,
@@ -153,8 +153,8 @@ impl Camera {
 
     fn vertex_in_bounds(&self, obj: &Geometry) -> bool {
         let in_bounds = |x, y| {
-            let x_range = self.x..self.x + self.width;
-            let y_range = self.y..self.y + self.height;
+            let x_range = 0.0..self.width;
+            let y_range = 0.0..self.height;
             x_range.contains(&x) && y_range.contains(&y)
         };
         for vec in &obj.vertex_locations {

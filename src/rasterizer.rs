@@ -22,20 +22,23 @@ impl ToDraw {
     }
 }
 
-pub fn rasterize_geometry(geometry: &Geometry) -> Result<Vec<ToDraw>, GeoError> {
-    let mut draw_buffer = vec![];
+pub fn rasterize_geometry<'a>(
+    geometry: &'a Geometry,
+    draw_buffer: &mut Vec<ToDraw>,
+) -> Result<(), GeoError<'a>> {
     match geometry.geo_type {
         GeometryType::Line => {
             let len = geometry.vertices.len();
             for i in 0..len - 1 {
                 let v1 = &geometry.vertices[i];
                 let v2 = &geometry.vertices[i + 1];
-                draw_buffer.append(&mut draw_line(
+                draw_line(
                     &geometry.vertex_locations[v1.index],
                     &geometry.vertex_locations[v2.index],
                     &(&v1.color).into(),
                     &(&v2.color).into(),
-                ));
+                    draw_buffer,
+                );
             }
         }
         GeometryType::Triangle => {
@@ -49,26 +52,27 @@ pub fn rasterize_geometry(geometry: &Geometry) -> Result<Vec<ToDraw>, GeoError> 
                 let v1 = &geometry.vertices[i];
                 let v2 = &geometry.vertices[i + 1];
                 let v3 = &geometry.vertices[i + 2];
-                draw_buffer.append(&mut rasterize_triangle(
+                rasterize_triangle(
                     &geometry.vertex_locations[v1.index],
                     &geometry.vertex_locations[v2.index],
                     &geometry.vertex_locations[v3.index],
                     &(&v1.color).into(),
                     &(&v2.color).into(),
                     &(&v3.color).into(),
-                ));
+                    draw_buffer,
+                );
                 i += 3;
             }
         }
     }
-    Ok(draw_buffer)
+    Ok(())
 }
 
 /// Implementation of Bresenham's line drawing algorithm.
 /// Takes two points and returns a ToDraw vector mapping the corresponding line
 /// to pixel values.
 /// to-do: color params do not need to be refs
-fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
+fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba, draw_buffer: &mut Vec<ToDraw>) {
     // Prepare vars
     let mut v1c = v1c;
     let mut v2c = v2c;
@@ -117,7 +121,6 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
     let mut d = x_diff - 2 * y_diff;
     let d_incr_gte_0 = -2 * y_diff;
     let d_incr_lt_0 = 2 * (x_diff - y_diff);
-    let mut draw_buffer = vec![];
     let x0 = x0.round() as i32;
     let y0 = y0.round() as i32;
     if xy_flipped {
@@ -145,7 +148,6 @@ fn draw_line(v1: &Point, v2: &Point, v1c: &Rgba, v2c: &Rgba) -> Vec<ToDraw> {
             draw_buffer.push(ToDraw::new(x, y, color, depth));
         }
     }
-    draw_buffer
 }
 
 fn rasterize_triangle(
@@ -155,16 +157,35 @@ fn rasterize_triangle(
     v1c: &Rgba,
     v2c: &Rgba,
     v3c: &Rgba,
-) -> Vec<ToDraw> {
+    draw_buffer: &mut Vec<ToDraw>,
+) {
     let x0 = v1[0].round();
     let x1 = v2[0].round();
     let x2 = v3[0].round();
     let y0 = v1[1].round();
     let y1 = v2[1].round();
     let y2 = v3[1].round();
-    let f12 = |x, y| (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1;
-    let f20 = |x, y| (y2 - y0) * x + (x0 - x2) * y + x2 * y0 - x0 * y2;
-    let f01 = |x, y| (y0 - y1) * x + (x1 - x0) * y + x0 * y1 - x1 * y0;
+    // I would assume the compiler would do these precomputes
+    // for me, but doing them myself seems to lead to gaining
+    // a handful of frames (~3). To-do: investigate further
+    let f12 = {
+        let y1y2 = y1 - y2;
+        let x2x1 = x2 - x1;
+        let x1y2x2y1 = x1 * y2 - x2 * y1;
+        move |x, y| y1y2 * x + x2x1 * y + x1y2x2y1
+    };
+    let f20 = {
+        let y2y0 = y2 - y0;
+        let x0x2 = x0 - x2;
+        let x2y0x0y2 = x2 * y0 - x0 * y2;
+        move |x, y| y2y0 * x + x0x2 * y + x2y0x0y2
+    };
+    let f01 = {
+        let y0y1 = y0 - y1;
+        let x1x0 = x1 - x0;
+        let x0y1x1y0 = x0 * y1 - x1 * y0;
+        move |x, y| y0y1 * x + x1x0 * y + x0y1x1y0
+    };
     let alpha_denom = f12(x0, y0);
     let beta_denom = f20(x1, y1);
     let lambda_denom = f01(x2, y2);
@@ -175,8 +196,7 @@ fn rasterize_triangle(
     let x_max = x0.max(x1).max(x2) as usize;
     let y_min = y0.min(y1).min(y2) as usize;
     let y_max = y0.max(y1).max(y2) as usize;
-    let within_bounds = |val| (0.0..=1.0).contains(&val);
-    let mut draw_buffer = vec![];
+    let within_bounds = |val| val >= 0.0 && val <= 1.0;
     for y in (y_min..=y_max).map(|y| y as f32) {
         for x in (x_min..=x_max).map(|x| x as f32) {
             let a = alpha(x, y);
@@ -192,7 +212,6 @@ fn rasterize_triangle(
             }
         }
     }
-    draw_buffer
 }
 
 #[cfg(test)]
@@ -209,8 +228,10 @@ mod tests {
         let y = 1;
         let c = Rgba::color(1.0, 0.0, 0.0);
         let target = vec![ToDraw::new(x, y, c.clone(), 0.0)];
+        let mut calculated = vec![];
         let vertex = point(x as f32, y as f32, 0.0);
-        assert_eq!(draw_line(&vertex, &vertex, &c, &c), target);
+        draw_line(&vertex, &vertex, &c, &c, &mut calculated);
+        assert_eq!(calculated, target);
     }
 
     // to-do: handle depth when in 3d (another test?)
@@ -229,7 +250,8 @@ mod tests {
                 let mut vertex2 = vertex1;
                 vertex2.x += x;
                 vertex2.y += y;
-                let line = draw_line(&vertex1, &vertex2, &c, &c);
+                let mut line = vec![];
+                draw_line(&vertex1, &vertex2, &c, &c, &mut line);
                 let target_point = ToDraw::new(
                     (vertex1.x + x) as i32,
                     (vertex1.y + y) as i32,
@@ -256,7 +278,14 @@ mod tests {
             ToDraw::new(x0.round() as i32, y0.round() as i32, c.clone(), 0.0),
             ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone(), 0.0),
         ];
-        let computed_line = draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c);
+        let mut computed_line = vec![];
+        draw_line(
+            &point(x0, y0, 0.0),
+            &point(x1, y1, 0.0),
+            &c,
+            &c,
+            &mut computed_line,
+        );
         assert_eq!(
             BTreeSet::from_iter(target_line.into_iter()),
             BTreeSet::from_iter(computed_line.into_iter()),
@@ -269,7 +298,16 @@ mod tests {
         let v1 = point(0.0, 0.0, 0.0);
         let v2 = point(2.0, 0.0, 0.0);
         let v3 = point(1.0, 1.0, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let mut computed_triangle = vec![];
+        rasterize_triangle(
+            &v1,
+            &v2,
+            &v3,
+            &color,
+            &color,
+            &color,
+            &mut computed_triangle,
+        );
         let target_triangle = vec![
             ToDraw::new(v1.x as i32, v1.y as i32, color.clone(), 0.0),
             ToDraw::new(v2.x as i32, v2.y as i32, color.clone(), 0.0),
@@ -293,7 +331,16 @@ mod tests {
         let v1 = point(0.1, 0.2, 0.0);
         let v2 = point(1.8, 0.3, 0.0);
         let v3 = point(1.1, 0.9, 0.0);
-        let computed_triangle = rasterize_triangle(&v1, &v2, &v3, &color, &color, &color);
+        let mut computed_triangle = vec![];
+        rasterize_triangle(
+            &v1,
+            &v2,
+            &v3,
+            &color,
+            &color,
+            &color,
+            &mut computed_triangle,
+        );
         let target_triangle = vec![
             ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone(), 0.0),
             ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone(), 0.0),

@@ -1,4 +1,5 @@
 use crate::math::OrdFloat;
+use fast_srgb8 as convert;
 use std::ops::{Add, AddAssign, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
@@ -73,15 +74,8 @@ impl Rgba {
 
 impl From<&Rgba> for u32 {
     fn from(rgba: &Rgba) -> Self {
-        fn to_8_bytes(c: f32) -> u32 {
-            (c * 255.0) as u32
-        }
-        let mut color: u32 = to_8_bytes(rgba.r.0);
-        color <<= 8;
-        color |= to_8_bytes(rgba.g.0);
-        color <<= 8;
-        color |= to_8_bytes(rgba.b.0);
-        color
+        let rgb = convert::f32x4_to_srgb8([rgba.r.0, rgba.g.0, rgba.b.0, 0.0]);
+        ((rgb[0] as u32) << 16) | ((rgb[1] as u32) << 8) | rgb[2] as u32
     }
 }
 
