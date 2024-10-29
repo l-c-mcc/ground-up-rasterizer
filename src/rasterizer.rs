@@ -22,7 +22,10 @@ impl ToDraw {
     }
 }
 
-pub fn rasterize_geometry<'a>(geometry: &'a Geometry, draw_buffer: &mut Vec<ToDraw>) -> Result<(), GeoError<'a>> {
+pub fn rasterize_geometry<'a>(
+    geometry: &'a Geometry,
+    draw_buffer: &mut Vec<ToDraw>,
+) -> Result<(), GeoError<'a>> {
     match geometry.geo_type {
         GeometryType::Line => {
             let len = geometry.vertices.len();
@@ -34,7 +37,7 @@ pub fn rasterize_geometry<'a>(geometry: &'a Geometry, draw_buffer: &mut Vec<ToDr
                     &geometry.vertex_locations[v2.index],
                     &(&v1.color).into(),
                     &(&v2.color).into(),
-                    draw_buffer
+                    draw_buffer,
                 );
             }
         }
@@ -56,7 +59,7 @@ pub fn rasterize_geometry<'a>(geometry: &'a Geometry, draw_buffer: &mut Vec<ToDr
                     &(&v1.color).into(),
                     &(&v2.color).into(),
                     &(&v3.color).into(),
-                    draw_buffer
+                    draw_buffer,
                 );
                 i += 3;
             }
@@ -154,7 +157,7 @@ fn rasterize_triangle(
     v1c: &Rgba,
     v2c: &Rgba,
     v3c: &Rgba,
-    draw_buffer: &mut Vec<ToDraw>
+    draw_buffer: &mut Vec<ToDraw>,
 ) {
     let x0 = v1[0].round();
     let x1 = v2[0].round();
@@ -166,12 +169,12 @@ fn rasterize_triangle(
     // for me, but doing them myself seems to lead to gaining
     // a handful of frames (~3). To-do: investigate further
     let f12 = {
-        let y1y2 = y1-y2;
+        let y1y2 = y1 - y2;
         let x2x1 = x2 - x1;
         let x1y2x2y1 = x1 * y2 - x2 * y1;
         move |x, y| y1y2 * x + x2x1 * y + x1y2x2y1
     };
-    let f20 = { 
+    let f20 = {
         let y2y0 = y2 - y0;
         let x0x2 = x0 - x2;
         let x2y0x0y2 = x2 * y0 - x0 * y2;
@@ -180,7 +183,7 @@ fn rasterize_triangle(
     let f01 = {
         let y0y1 = y0 - y1;
         let x1x0 = x1 - x0;
-        let x0y1x1y0= x0 * y1 - x1 * y0;
+        let x0y1x1y0 = x0 * y1 - x1 * y0;
         move |x, y| y0y1 * x + x1x0 * y + x0y1x1y0
     };
     let alpha_denom = f12(x0, y0);
@@ -276,7 +279,13 @@ mod tests {
             ToDraw::new(x1.round() as i32, y1.round() as i32, c.clone(), 0.0),
         ];
         let mut computed_line = vec![];
-        draw_line(&point(x0, y0, 0.0), &point(x1, y1, 0.0), &c, &c, &mut computed_line);
+        draw_line(
+            &point(x0, y0, 0.0),
+            &point(x1, y1, 0.0),
+            &c,
+            &c,
+            &mut computed_line,
+        );
         assert_eq!(
             BTreeSet::from_iter(target_line.into_iter()),
             BTreeSet::from_iter(computed_line.into_iter()),
@@ -290,7 +299,15 @@ mod tests {
         let v2 = point(2.0, 0.0, 0.0);
         let v3 = point(1.0, 1.0, 0.0);
         let mut computed_triangle = vec![];
-        rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &mut computed_triangle);
+        rasterize_triangle(
+            &v1,
+            &v2,
+            &v3,
+            &color,
+            &color,
+            &color,
+            &mut computed_triangle,
+        );
         let target_triangle = vec![
             ToDraw::new(v1.x as i32, v1.y as i32, color.clone(), 0.0),
             ToDraw::new(v2.x as i32, v2.y as i32, color.clone(), 0.0),
@@ -314,8 +331,16 @@ mod tests {
         let v1 = point(0.1, 0.2, 0.0);
         let v2 = point(1.8, 0.3, 0.0);
         let v3 = point(1.1, 0.9, 0.0);
-        let mut computed_triangle = vec![]; 
-        rasterize_triangle(&v1, &v2, &v3, &color, &color, &color, &mut computed_triangle);
+        let mut computed_triangle = vec![];
+        rasterize_triangle(
+            &v1,
+            &v2,
+            &v3,
+            &color,
+            &color,
+            &color,
+            &mut computed_triangle,
+        );
         let target_triangle = vec![
             ToDraw::new(v1.x.round() as i32, v1.y.round() as i32, color.clone(), 0.0),
             ToDraw::new(v2.x.round() as i32, v2.y.round() as i32, color.clone(), 0.0),

@@ -8,8 +8,8 @@ mod rasterizer;
 mod timer;
 mod world;
 
-use std::f32::{consts::PI, INFINITY};
 use std::cell::RefCell;
+use std::f32::{consts::PI, INFINITY};
 
 use color::{Color, Rgba};
 use geometry::{direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
@@ -30,9 +30,12 @@ fn main() {
     let mut window = Window::new("Rasterizer", width, height, WindowOptions::default()).unwrap();
     // Triangle depth and alpha testing
     let mut t1 = triangle();
+    t1.set_name(Some("Solid triangle for transparency testing".to_string()));
     t1.scale(na::matrix![200.0;200.0;0.0]);
     let mut t2 = t1.clone();
+    t2.set_name(Some("Lower depth transparency triangle".to_string()));
     let mut t3 = t2.clone();
+    t3.set_name(Some("Higher depth transparency triangle".to_string()));
     t1.translate(direction(0.0, 0.0, 0.0));
     t2.translate(direction(50.0, 50.0, 1.0));
     t3.translate(direction(100.0, 100.0, 2.0));
@@ -46,10 +49,13 @@ fn main() {
     let mut l1 = line();
     l1.scale(na::matrix![200.0;200.0;1.0]);
     l1.translate(point(-200.0, 600.0, 0.0));
+    l1.set_name(Some("Horizontal line".to_string()));
     let mut l2 = l1.clone();
     l2.rotation(0.0, 0.0, (2.0 * PI) / 3.0);
     l2.translate(direction(120.0, -170.0, 0.0));
+    l2.set_name(Some("Rotated line 2pi/3".to_string()));
     let mut l3 = l1.clone();
+    l3.set_name(Some("Rotated line 4pi/3".to_string()));
     l3.rotation(0.0, 0.0, (4.0 * PI) / 3.0);
     l3.translate(direction(180.0, 0.0, 0.0));
     l1.translate(direction(0.0, -20.0, 0.0));
@@ -59,10 +65,12 @@ fn main() {
     let mut s = square();
     s.scale(na::matrix![200.0;200.0;200.0]);
     s.translate(direction(500.0, 500.0, 0.0));
+    s.set_name(Some("Pointing square".to_string()));
     let mut t = triangle();
     t.scale(na::matrix![200.0; -200.0; 0.0]);
     t.rotation(0.0, 0.0, PI);
     t.translate(direction(500.0, -200.0, 0.0));
+    s.set_name(Some("Triangle above pointing square".to_string()));
     // t.set_animation(|geo: &mut Geometry, time: f32| {
     //     geo.rotation(0.0, 0.0, time * 2.0);
     //     let scale = 100.0 * time.sin();
@@ -82,6 +90,7 @@ fn main() {
     let mut transparent = vec![];
     let mut fps_sum = 0.;
     let mut fps_count = 0.;
+
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // update timer
         timer.tick();
@@ -93,8 +102,12 @@ fn main() {
             let cur_fps = 1.0 / delta_time;
             fps_sum += cur_fps;
             fps_count += 1.;
-            println!("{} fps; {} delta time; {} average fps", cur_fps, delta_time, fps_sum /fps_count);
-
+            println!(
+                "{} fps; {} delta time; {} average fps",
+                cur_fps,
+                delta_time,
+                fps_sum / fps_count
+            );
         }
         // camera movement
         let angle = rotate_camera(&window);
@@ -143,10 +156,12 @@ fn main() {
                 }
             }
         }
-        for i in 0..(width*height) {
+        for i in 0..(width * height) {
             u32_buffer[i] = u32::from(&rgba_buffer[i]);
         }
-        window.update_with_buffer(&u32_buffer, width, height).unwrap();
+        window
+            .update_with_buffer(&u32_buffer, width, height)
+            .unwrap();
         // reset buffers
         for item in &mut rgba_buffer {
             *item = Rgba::color(0.0, 0.0, 0.0);

@@ -1,3 +1,5 @@
+use core::fmt;
+
 use crate::color::Color;
 use crate::math;
 use nalgebra as na;
@@ -13,7 +15,7 @@ pub type Transform = na::Matrix4<f32>;
 pub type Animation = fn(&mut Geometry, secs: f32);
 
 // assumption: in local space, center = (0,0)
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Geometry {
     pub vertices: Vec<Vertex>,
     pub vertex_locations: Vec<Point>,
@@ -22,6 +24,7 @@ pub struct Geometry {
     rotation: Transform,
     scale: Transform,
     animation: Option<Animation>,
+    name: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -46,7 +49,12 @@ impl Geometry {
             scale: na::Matrix4::identity(),
             rotation: na::Matrix4::identity(),
             animation: None,
+            name: None,
         }
+    }
+
+    pub fn set_name(&mut self, name: Option<String>) {
+        self.name = name;
     }
 
     pub fn transform(&mut self, matrix: Transform) {
@@ -117,6 +125,12 @@ impl Geometry {
         for v in &mut self.vertices {
             v.color = color;
         }
+    }
+}
+
+impl fmt::Debug for Geometry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name.as_ref().unwrap().as_str())
     }
 }
 
