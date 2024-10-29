@@ -1,6 +1,6 @@
 use crate::math::OrdFloat;
-use std::ops::{Add, AddAssign, Mul, Sub};
 use fast_srgb8 as convert;
+use std::ops::{Add, AddAssign, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
