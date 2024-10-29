@@ -11,8 +11,8 @@ mod world;
 use std::f32::consts::PI;
 
 use color::{Color, Rgba};
-use geometry::{direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
-use math::{f32_equals, OrdFloat};
+use geometry::{cube, direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
+use math::{f32_equals, translation_matrix, OrdFloat};
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
 use rasterizer::rasterize_geometry;
@@ -35,7 +35,7 @@ fn main() {
     t1.translate(direction(0.0, 0.0, 0.0));
     t2.translate(direction(50.0, 50.0, 1.0));
     t3.translate(direction(100.0, 100.0, 2.0));
-    t1.set_color(Color::Red);
+    t1.set_color(Color::Custom(0.0,1.0,1.0,1.0));
     t2.set_color(Color::Custom(0.0, 0.0, 1.0, 0.5));
     t3.set_color(Color::Custom(0.0, 1.0, 0.0, 0.45));
     world.insert(t1);
@@ -72,6 +72,19 @@ fn main() {
     // });
     world.insert(t);
     world.insert(s);
+    // 3d testing
+    let mut cube = cube();
+    cube.translate(direction(1000.0, 1000.0, 0.0));
+    cube.scale(na::matrix![250.0;250.0;250.0]);
+    cube.rotation(0.0, (90.0 as f32).to_radians(), 0.0);
+    cube.set_animation(|geo, time| {
+         geo.rotation(time / 2.0, time, 0.0);
+    });
+    world.insert(cube);
+    let transform_back = translation_matrix(direction(0.0,0.0, -400.0));
+    for obj in &mut world.objects {
+        obj.transform(transform_back);
+    }
     while window.is_open() {
         timer.tick();
         let delta_time = timer.delta_time_secs();
@@ -96,7 +109,6 @@ fn main() {
                 vec![]
             }));
         }
-        // todo: combine map and fold?
         let (opaque, mut transparent) =
             draw_buffer
                 .into_iter()

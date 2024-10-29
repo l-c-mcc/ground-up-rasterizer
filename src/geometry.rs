@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::color::Color;
 use crate::math;
 use nalgebra as na;
@@ -52,6 +54,18 @@ impl Geometry {
     pub fn transform(&mut self, matrix: Transform) {
         for vertex in &mut self.vertex_locations {
             *vertex = matrix * *vertex;
+        }
+    }
+
+    pub fn transform_proj(&mut self, matrix: Transform) {
+        for vertex in &mut self.vertex_locations {
+            *vertex = matrix * *vertex;
+            // to-do: camera view box
+            if vertex.w == 0.0 {
+                //*vertex /= 0.001;
+            } else {
+                //*vertex /= vertex.w;
+            }
         }
     }
 
@@ -178,4 +192,81 @@ pub fn square() -> Geometry {
     square.vertices.push(Vertex::new(3, Color::Green));
     square.vertices.push(Vertex::new(2, Color::Red));
     square
+}
+
+pub fn cube() -> Geometry {
+    let mut cube = Geometry::new(GeometryType::Triangle);
+    cube.vertex_locations.push(point(-1.0, -1.0, 1.0));
+    cube.vertex_locations.push(point(-1.0, -1.0, -1.0));
+    cube.vertex_locations.push(point(-1.0, 1.0, -1.0));
+    cube.vertex_locations.push(point(-1.0, 1.0, 1.0));
+    cube.vertex_locations.push(point(1.0, -1.0, -1.0));
+    cube.vertex_locations.push(point(1.0, 1.0, -1.0));
+    cube.vertex_locations.push(point(1.0, 1.0, 1.0));
+    cube.vertex_locations.push(point(1.0, -1.0, 1.0));
+    // to-do: may need to reorder if back face culling is implemented
+    // front face
+    cube.vertices.push(Vertex::new(0, Color::Blue));
+    cube.vertices.push(Vertex::new(3, Color::Blue));
+    cube.vertices.push(Vertex::new(6, Color::Blue));
+    cube.vertices.push(Vertex::new(6, Color::Blue));
+    cube.vertices.push(Vertex::new(7, Color::Blue));
+    cube.vertices.push(Vertex::new(0, Color::Blue));
+    // left face
+    cube.vertices.push(Vertex::new(0, Color::Yellow));
+    cube.vertices.push(Vertex::new(3, Color::Yellow));
+    cube.vertices.push(Vertex::new(2, Color::Yellow));
+    cube.vertices.push(Vertex::new(2, Color::Yellow));
+    cube.vertices.push(Vertex::new(1, Color::Yellow));
+    cube.vertices.push(Vertex::new(0, Color::Yellow));
+    // right face
+    cube.vertices.push(Vertex::new(6, Color::Red));
+    cube.vertices.push(Vertex::new(7, Color::Red));
+    cube.vertices.push(Vertex::new(4, Color::Red));
+    cube.vertices.push(Vertex::new(4, Color::Red));
+    cube.vertices.push(Vertex::new(5, Color::Red));
+    cube.vertices.push(Vertex::new(6, Color::Red));
+    // back face
+    cube.vertices.push(Vertex::new(5, Color::Cyan));
+    cube.vertices.push(Vertex::new(4, Color::Cyan));
+    cube.vertices.push(Vertex::new(1, Color::Cyan));
+    cube.vertices.push(Vertex::new(1, Color::Cyan));
+    cube.vertices.push(Vertex::new(2, Color::Cyan));
+    cube.vertices.push(Vertex::new(5, Color::Cyan));
+    // top face
+    cube.vertices.push(Vertex::new(0, Color::Magenta));
+    cube.vertices.push(Vertex::new(1, Color::Magenta));
+    cube.vertices.push(Vertex::new(4, Color::Magenta));
+    cube.vertices.push(Vertex::new(4, Color::Magenta));
+    cube.vertices.push(Vertex::new(7, Color::Magenta));
+    cube.vertices.push(Vertex::new(0, Color::Magenta));
+    // bottom face
+    cube.vertices.push(Vertex::new(2, Color::Green));
+    cube.vertices.push(Vertex::new(3, Color::Green));
+    cube.vertices.push(Vertex::new(6, Color::Green));
+    cube.vertices.push(Vertex::new(6, Color::Green));
+    cube.vertices.push(Vertex::new(5, Color::Green));
+    cube.vertices.push(Vertex::new(2, Color::Green));
+    cube
+}
+
+#[cfg(test)]
+mod test {
+    use math::projection_matrix;
+
+    use super::*;
+
+    #[test]
+    //to-do: better name
+    fn test_projection_transform() {
+        let vec = na::vector![1.0,1.0,1.0,1.0];
+        let d = 10.0;
+        let proj = projection_matrix(0.0, 0.0, d, None);
+        let result = proj * vec;
+        let target: na::Vector4<f32> = na::vector![1.0,1.0,1.0,-0.1];
+        assert_eq!(result, target);
+        let norm_target = na::vector![-10.0,-10.0,-10.0,1.0];
+        let result = result / result.w;
+        assert_eq!(result, norm_target);
+    }
 }

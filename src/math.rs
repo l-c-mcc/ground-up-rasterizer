@@ -120,6 +120,18 @@ pub fn scale_matrix(vec: na::Vector3<f32>) -> Transform {
                 0.0, 0.0, 0.0, 1.0]
 }
 
+pub fn projection_matrix(
+    hor_fov: f32,
+    vert_fov: f32,
+    near_dis: f32,
+    far_dis: Option<f32>,
+) -> Transform {
+    na::matrix![1.0, 0.0, 0.0,           0.0;
+                0.0, 1.0, 0.0,           0.0;
+                0.0, 0.0, 1.0,           0.0;
+                0.0, 0.0, -1.0/near_dis, 0.0]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

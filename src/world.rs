@@ -1,9 +1,10 @@
 use crate::geometry::{direction, point, Geometry, GeometryType, Point};
-use crate::math::{self, translation_matrix, z_rotation_matrix};
+use crate::math::{self, f32_equals, projection_matrix, translation_matrix, z_rotation_matrix};
 
 #[derive(Default)]
 pub struct World {
-    objects: Vec<Geometry>,
+    //to-do: remove pub
+    pub objects: Vec<Geometry>,
 }
 
 pub struct Camera {
@@ -75,10 +76,12 @@ impl Camera {
             .objects
             .iter()
             .map(|x| x.local_to_world(time, final_transform))
-            .filter(|x| self.obj_view(x))
+            //.filter(|x| self.obj_view(x))
             .collect();
+        let proj = projection_matrix(0.0, 0.0, 10.0, None);
         for obj in &mut in_view {
             // to-do: update in 3d
+            //obj.transform_proj(proj);
             obj.camera_to_screen(self.width, self.height, target_width, target_height);
         }
         in_view
