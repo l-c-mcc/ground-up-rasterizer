@@ -90,9 +90,9 @@ fn main() {
          geo.rotation(time / 2.0, time, 0.0);
     });
     world.insert(cube);
-    let transform_back = translation_matrix(direction(0.0,0.0, -400.0));
+    let push_back = direction(0.0,0.0, -400.0);
     for obj in &mut world.objects {
-        obj.transform(transform_back);
+        obj.translate(push_back);
     }
     let mut cur = 0;
     let mut rgba_buffer = vec![Rgba::from(&Color::Black); width * height];

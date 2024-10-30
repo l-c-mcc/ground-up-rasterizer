@@ -81,7 +81,7 @@ impl Camera {
         let proj = projection_matrix(0.0, 0.0, 10.0, None);
         for obj in &mut in_view {
             // to-do: update in 3d
-            //obj.transform_proj(proj);
+            obj.transform_proj(proj);
             obj.camera_to_screen(self.width, self.height, target_width, target_height);
         }
         in_view

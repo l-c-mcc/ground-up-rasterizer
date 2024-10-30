@@ -70,7 +70,7 @@ impl Geometry {
             if vertex.w == 0.0 {
                 //*vertex /= 0.001;
             } else {
-                //*vertex /= vertex.w;
+                *vertex /= vertex.w;
             }
         }
     }
