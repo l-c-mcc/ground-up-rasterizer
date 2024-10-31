@@ -66,6 +66,7 @@ impl Camera {
             -(self.y + (self.height / 2.0)),
             0.0,
         );
+        let dis = 10.0;
         let cam_center_translation = translation_matrix(direction_to_center);
         let rotation = z_rotation_matrix(self.angle);
         let undo_cam_center_translation = translation_matrix(-direction_to_center);
@@ -75,10 +76,11 @@ impl Camera {
         let mut in_view: Vec<Geometry> = world
             .objects
             .iter()
-            .map(|x| x.local_to_world(time, final_transform))
+            .map(|x| x.local_to_world(time, final_transform, dis))
+            //to-do: new filter for 3D
             //.filter(|x| self.obj_view(x))
             .collect();
-        let proj = projection_matrix(0.0, 0.0, 10.0, None);
+        let proj = projection_matrix(0.0, 0.0, dis, None);
         for obj in &mut in_view {
             // to-do: update in 3d
             obj.transform_proj(proj);

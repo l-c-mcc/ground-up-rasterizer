@@ -12,7 +12,9 @@ use std::cell::RefCell;
 use std::f32::{consts::PI, INFINITY};
 
 use color::{Color, Rgba};
-use geometry::{cube, direction, line, point, right_triangle, square, triangle, GeoError, Geometry};
+use geometry::{
+    cube, direction, line, point, right_triangle, square, triangle, GeoError, Geometry,
+};
 use math::{f32_equals, translation_matrix, OrdFloat};
 use minifb::{Key, Window, WindowOptions};
 use nalgebra as na;
@@ -39,7 +41,7 @@ fn main() {
     t1.translate(direction(0.0, 0.0, 0.0));
     t2.translate(direction(50.0, 50.0, 1.0));
     t3.translate(direction(100.0, 100.0, 2.0));
-    t1.set_color(Color::Custom(0.0,1.0,1.0,1.0));
+    t1.set_color(Color::Custom(0.0, 1.0, 1.0, 1.0));
     t2.set_color(Color::Custom(0.0, 0.0, 1.0, 0.5));
     t3.set_color(Color::Custom(0.0, 1.0, 0.0, 0.45));
     world.insert(t1);
@@ -87,10 +89,11 @@ fn main() {
     cube.scale(na::matrix![250.0;250.0;250.0]);
     cube.rotation(0.0, (90.0 as f32).to_radians(), 0.0);
     cube.set_animation(|geo, time| {
-         geo.rotation(time / 2.0, time, 0.0);
+        geo.translate(direction(0.0, 0.0, -50.0 * time));
+        //geo.rotation(time / 2.0, time, 0.0);
     });
     world.insert(cube);
-    let push_back = direction(0.0,0.0, -400.0);
+    let push_back = direction(0.0, 0.0, -20.0);
     for obj in &mut world.objects {
         obj.translate(push_back);
     }

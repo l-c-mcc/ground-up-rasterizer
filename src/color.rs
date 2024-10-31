@@ -23,8 +23,8 @@ impl From<&Color> for Rgba {
             Color::Green => Rgba::color(0.0, 1.0, 0.0),
             Color::Blue => Rgba::color(0.0, 0.0, 1.0),
             Color::White => Rgba::color(1.0, 1.0, 1.0),
-            Color::Yellow => Rgba::color(1.0,1.0,0.0),
-            Color::Magenta => Rgba::color(1.0,0.0,1.0),
+            Color::Yellow => Rgba::color(1.0, 1.0, 0.0),
+            Color::Magenta => Rgba::color(1.0, 0.0, 1.0),
             Color::Cyan => Rgba::color(0.0, 1.0, 1.0),
             Color::Custom(r, g, b, a) => Rgba::color_a(*r, *g, *b, *a),
         }

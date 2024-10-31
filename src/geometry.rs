@@ -110,11 +110,32 @@ impl Geometry {
         self.scale = math::scale_matrix(scale);
     }
 
-    pub fn local_to_world(&self, time: f32, cam_rotation: Transform) -> Self {
+    pub fn local_to_world(&self, time: f32, cam_rotation: Transform, dis: f32) -> Self {
         let mut copy = self.clone();
+
         copy.animate(time);
         let transformation_matrix = cam_rotation * copy.translation * copy.rotation * copy.scale;
         copy.transform(transformation_matrix);
+        // very hacky way to stop triangles behind camera from being included.
+        // This could be much better!
+        // to-do: update to support lines
+        if copy.geo_type == GeometryType::Triangle {
+            let get_z = |i| {
+                let vertex: &Vertex = &self.vertices[i];
+                let index = (*vertex).index;
+                copy.vertex_locations[index].z
+            };
+            let lt_dis = |i| get_z(i) < -dis;
+            copy.vertices.clear();
+            for i in (0..self.vertices.len()).step_by(3) {
+                if lt_dis(i) && lt_dis(i + 1) && lt_dis(i + 2) {
+                    copy.vertices.push(self.vertices[i].clone());
+                    copy.vertices.push(self.vertices[i + 1].clone());
+                    copy.vertices.push(self.vertices[i + 2].clone());
+                }
+            }
+        }
+
         copy
     }
 
@@ -271,13 +292,13 @@ mod test {
     #[test]
     //to-do: better name
     fn test_projection_transform() {
-        let vec = na::vector![1.0,1.0,1.0,1.0];
+        let vec = na::vector![1.0, 1.0, 1.0, 1.0];
         let d = 10.0;
         let proj = projection_matrix(0.0, 0.0, d, None);
         let result = proj * vec;
-        let target: na::Vector4<f32> = na::vector![1.0,1.0,1.0,-0.1];
+        let target: na::Vector4<f32> = na::vector![1.0, 1.0, 1.0, -0.1];
         assert_eq!(result, target);
-        let norm_target = na::vector![-10.0,-10.0,-10.0,1.0];
+        let norm_target = na::vector![-10.0, -10.0, -10.0, 1.0];
         let result = result / result.w;
         assert_eq!(result, norm_target);
     }
