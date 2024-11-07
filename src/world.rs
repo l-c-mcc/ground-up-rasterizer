@@ -84,6 +84,7 @@ impl Camera {
         for obj in &mut in_view {
             // to-do: update in 3d
             obj.transform_proj(proj);
+            obj.transform(translation_matrix(direction(self.width / 2., self.height / 2., 0.0)));
             obj.camera_to_screen(self.width, self.height, target_width, target_height);
         }
         in_view

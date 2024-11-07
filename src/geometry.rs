@@ -65,6 +65,7 @@ impl Geometry {
 
     pub fn transform_proj(&mut self, matrix: Transform) {
         for vertex in &mut self.vertex_locations {
+            let z = vertex.z;
             *vertex = matrix * *vertex;
             // to-do: camera view box
             if vertex.w == 0.0 {
@@ -72,6 +73,7 @@ impl Geometry {
             } else {
                 *vertex /= vertex.w;
             }
+            vertex.z = z;
         }
     }
 

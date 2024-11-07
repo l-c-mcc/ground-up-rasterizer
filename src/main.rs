@@ -39,8 +39,8 @@ fn main() {
     let mut t3 = t2.clone();
     t3.set_name(Some("Higher depth transparency triangle".to_string()));
     t1.translate(direction(0.0, 0.0, 0.0));
-    t2.translate(direction(50.0, 50.0, 1.0));
-    t3.translate(direction(100.0, 100.0, 2.0));
+    t2.translate(direction(50.0, 50.0, 4.0));
+    t3.translate(direction(100.0, 100.0, 8.0));
     t1.set_color(Color::Custom(0.0, 1.0, 1.0, 1.0));
     t2.set_color(Color::Custom(0.0, 0.0, 1.0, 0.5));
     t3.set_color(Color::Custom(0.0, 1.0, 0.0, 0.45));
@@ -87,13 +87,13 @@ fn main() {
     let mut cube = cube();
     cube.translate(direction(1000.0, 1000.0, 0.0));
     cube.scale(na::matrix![250.0;250.0;250.0]);
-    cube.rotation(0.0, (90.0 as f32).to_radians(), 0.0);
+    //cube.rotation(0.0, (90.0 as f32).to_radians(), 0.0);
     cube.set_animation(|geo, time| {
-        geo.translate(direction(0.0, 0.0, -50.0 * time));
-        //geo.rotation(time / 2.0, time, 0.0);
+        geo.translate(direction(0.0, 0.0, -10.0 * time));
+        geo.rotation(0.0, time / 2.0, time);
     });
     world.insert(cube);
-    let push_back = direction(0.0, 0.0, -20.0);
+    let push_back = direction(1500.0, 0.0, -300.0);
     for obj in &mut world.objects {
         obj.translate(push_back);
     }
